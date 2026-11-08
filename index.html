@@ -115,6 +115,9 @@
   #meter{flex:1; height:12px; border-radius:8px; background:#eee4d4; overflow:hidden;}
   #meterFill{height:100%; width:0; background:linear-gradient(90deg,#ffcf3f,#ff8a2e); border-radius:8px; transition:width .1s linear;}
   #controls{width:100%; display:grid; grid-template-columns:1fr 2fr; gap:10px; margin-top:10px;}
+  #controls.three{grid-template-columns:1fr 1fr 1.6fr;}
+  #doorBtn{display:none;}
+  #controls.three #doorBtn{display:flex;}
   .ctl{
     border:none; border-radius:20px; padding:12px 6px; cursor:pointer; font-family:'Fredoka',sans-serif; font-weight:600; font-size:18px;
     background:#fff; color:var(--ink); box-shadow:0 6px 0 #e3d8c6, 0 10px 20px rgba(100,80,60,.12); display:flex; flex-direction:column; align-items:center; gap:2px;
@@ -212,7 +215,7 @@
     <p>Poppy is a good puppy. Mostly. Today she isn't.</p>
     <p><b>You are Poppy.</b> They've gone out. Three days, one living room, three crimes. Do what you like. Just be back in your bed, looking innocent, when they come home.</p>
     <div class="levels">
-      <div class="lvl r1 now"><div class="badge">1</div><div><span class="name">The rug</span><span class="what">She needs to go. The garden door is shut.</span></div></div>
+      <div class="lvl r1 now"><div class="badge">1</div><div><span class="name">The rug</span><span class="what">She needs to go. Again and again. The garden door is shut.</span></div></div>
       <div class="lvl r2 locked"><div class="badge">2</div><div><span class="name">The LOTA</span><span class="what">Next day. The Eileen Gray sofa has five cushions. Not for long.</span></div></div>
       <div class="lvl r3 locked"><div class="badge">3</div><div><span class="name">The monkey</span><span class="what">The day after. Up on the shelf sits the little green knitted monkey. Everybody loves him.</span></div></div>
       <div class="lvl r4 locked"><div class="badge">⚖</div><div><span class="name">When they come home</span><span class="what">Poppy weighs her joy against her guilt.</span></div></div>
@@ -281,6 +284,7 @@
   <div id="meterWrap"><span id="meterLab"></span><div id="meter"><div id="meterFill"></div></div></div>
   <div id="controls">
     <button class="ctl" id="bedBtn">🛏️ To bed<small>look innocent</small></button>
+    <button class="ctl" id="doorBtn">🚪 Garden<small>scratch</small></button>
     <button class="ctl" id="actBtn"><span id="actTxt">Poop</span><small id="actSub"></small></button>
   </div>
   <div id="controls2">
@@ -309,9 +313,9 @@
 
   const ROUNDS = [
     {key:'rug', name:'The rug', n:1, arrive:[58,76], falses:2,
-     goal:'Poop in the living room. Be in bed when they come home.',
-     intro:'They\'ve gone out. Poppy is alone, and soon she will need to go. The garden door is shut.',
-     how:'Her need builds up. Once she <b>could go</b>, tap <b>Poop</b>: the middle of the rug gives the most joy. Before that she can <b>scratch at the garden door</b>. Nobody will come, but it counts for something later. And if she holds it too long, it just happens, wherever she is.'},
+     goal:'At least 3 poops in the living room. Be in bed when they come home.',
+     intro:'They\'ve gone out. Poppy is alone, and she needs to go. Again and again. The garden door is shut.',
+     how:'Tap <b>Poop</b> whenever you like, wherever she is. The longer she waits, the <b>bigger</b> it gets, and the bigger it is, the longer it takes. Parquet is fine, the rug is better, the <b>medallion</b> in the middle of the rug is best. If she holds it too long it just happens, wherever she is. Or tap <b>Garden</b> and she scratches at the garden door. Nobody will come. But it counts for something later.'},
     {key:'lota', name:'The LOTA', n:2, arrive:[52,72], falses:2,
      goal:'Shred at least 3 of the 5 cushions. Be in bed when they come home.',
      intro:'Next day. The rug is clean again. They\'ve gone out. The sofa is an Eileen Gray LOTA, everyone says so, and it has five cushions.',
@@ -541,7 +545,7 @@
   let keys = {}, actHeld = false;
 
   function newRun(){
-    run = {round: 0, poopX: null, poopJoy: 0, poopLabel: '', cushions: makeCushions(), monkeyStage: 0, monkeyGrabbed: false,
+    run = {round: 0, poops: [], best: '', cushions: makeCushions(), monkeyStage: 0, monkeyGrabbed: false,
            puffs: [], joy: {rug: 0, lota: 0, monkey: 0}};
   }
 
@@ -558,7 +562,7 @@
   function drawEvidence(){
     let s = sofaSVG(run.cushions);
     if (run.round === 2 && !run.monkeyGrabbed) s += `<g transform="translate(${SHELF.mx} ${SHELF.y}) scale(.95)">${monkeySVG(0)}</g>`;
-    if (run.poopX != null && run.round === 0) s += `<use href="#poop" transform="translate(${run.poopX} ${GY+6}) scale(.36)"/>`;
+    if (run.round === 0) for (const q of run.poops) s += `<use href="#poop" transform="translate(${q.x.toFixed(0)} ${GY + 6 + q.dy}) scale(${(.16 + .26 * q.size).toFixed(2)})"/>`;
     for (const p of run.puffs) s += `<use href="#puff" transform="translate(${p.x.toFixed(0)} ${p.y.toFixed(0)}) scale(${p.s.toFixed(2)})"/>`;
     if (g && g.monkeyDropped) s += `<g transform="translate(${g.monkeyDropped} ${GY+4}) scale(.8)">${monkeySVG(run.monkeyStage)}</g>`;
     P.ev.innerHTML = s;
@@ -576,7 +580,7 @@
     g = {
       R, elapsed: 0, joy: 0, over: false,
       p: {x: BED_X, y: GY, dir: 1, mode: 'bed', tx: null, speed: 230, onSofa: false, hop: null, jump: null, actUntil: 0, walkPhase: 0},
-      need: 0, squat: 0, scratchT: 0, chewP: 0, poopDone: false, hasMonkey: false, bubble: null, bubbleUntil: 0,
+      need: .3, squat: 0, scratchT: 0, chewP: 0, hasMonkey: false, bubble: null, bubbleUntil: 0,
       alarms: schedule(R), alarm: null
     };
     showAlarm(null);
@@ -610,10 +614,12 @@
   }
   function goalDone(){
     const k = g.R.key;
-    if (k === 'rug') return g.poopDone;
+    if (k === 'rug') return livingPoops() >= 3;
     if (k === 'lota') return run.cushions.filter(c => c.hp <= 0).length >= 3;
     return run.monkeyStage >= 1;
   }
+  function livingPoops(){ return run.poops.filter(q => !q.bed).length; }
+  function sizeWord(n){ return n < .35 ? 'small' : n < .7 ? 'medium' : 'BIG'; }
   function stageName(){ return g.alarm ? STAGES[g.alarm.type][g.alarm.i][0] : null; }
   const BUSY = ['squat','jump','climb','scratch'];
 
@@ -633,10 +639,16 @@
       if (y < 330 && x > ON_SOFA[0] - 30 && x < ON_SOFA[1] + 30){ p.tx = clamp(x, ON_SOFA[0], ON_SOFA[1]); p.mode = 'walk'; p.speed = 200; return; }
       hopDown(); p.tx = clamp(x, 50, 770); p.speed = 230; return;
     }
-    p.tx = clamp(x, 50, 770); p.mode = 'walk'; p.speed = 230;
+    p.tx = clamp(x, 50, 770); p.mode = 'walk'; p.speed = 230; g.toDoor = false;
   }
   function hopDown(){ const p = g.p; p.onSofa = false; p.hop = {from: p.y, to: GY, t: 0, dur: .35}; p.mode = 'walk'; }
   $('bedBtn').addEventListener('click', () => { if (paused || g.over) return; ac(); toBed(); });
+  $('doorBtn').addEventListener('click', () => {
+    if (paused || g.over || g.R.key !== 'rug') return; ac();
+    const p = g.p; if (['squat','jump','climb','scratch'].includes(p.mode)) return;
+    if (Math.abs(p.x - GDOOR) < 6){ startScratch(); return; }
+    p.tx = GDOOR; p.mode = 'walk'; p.speed = 260; g.toDoor = true;
+  });
   function toBed(){
     const p = g.p; if (['squat','jump','climb'].includes(p.mode)) return;
     if (p.onSofa) hopDown();
@@ -680,11 +692,8 @@
     if (goalDone() && p.mode === 'bed' && !g.alarm) return {ok:true, kind:'wait', label:'Wait for them', sub:'curl up and sleep'};
     if (goalDone() && p.mode === 'bed') return {ok:false, label:'Asleep', sub:'of course'};
     if (k === 'rug'){
-      if (g.poopDone) return {ok:false, label:'Done', sub:'now get to bed'};
-      if (!p.onSofa && Math.abs(p.x - GDOOR) < 50 && p.mode !== 'bed') return {ok:true, kind:'scratch', label:'Scratch', sub: run.scratched ? 'nobody comes' : 'at the garden door'};
-      if (g.need < .4) return {ok:false, label:'Poop', sub:'she doesn\'t need to yet', why:'not yet…'};
-      if (p.mode === 'bed') return {ok:false, label:'Poop', sub:'not in her own bed', why:'not in MY bed!'};
-      return {ok:true, kind:'poop', label:'Poop', sub:'can\'t stop once started', hot: g.need > .8};
+      if (g.need < .12) return {ok:false, label:'Poop', sub:'she just went'};
+      return {ok:true, kind:'poop', label:'Poop', sub: sizeWord(g.need) + (p.mode === 'bed' ? ', in her bed?!' : ''), hot: g.need > .8};
     }
     if (k === 'lota'){
       if (p.x < SOFA.x0 + 40 || p.x > SOFA.x1 - 30 || p.onSofa) return {ok:false, label:'Tug', sub:'go to the sofa', why:'where\'s the sofa?'};
@@ -702,17 +711,21 @@
   }
 
   // ---------- crimes ----------
-  function startSquat(){ const p = g.p; p.mode = 'squat'; g.squat = 0; p.tx = null; SFX.plop(); }
+  function startSquat(){ const p = g.p; g.wasBed = p.mode === 'bed'; p.mode = 'squat'; g.squat = 0; g.squatSize = g.need; g.squatDur = 1 + 2.2 * g.need; p.tx = null; g.toDoor = false; SFX.plop(); }
   function startScratch(){ const p = g.p; p.mode = 'scratch'; g.scratchT = 0; p.tx = null; p.dir = p.x > GDOOR ? -1 : 1; }
   function finishPoop(){
-    run.poopX = g.p.x - g.p.dir * 30;
-    let j, l;
-    if (Math.abs(run.poopX - BED_X) < 60){ j = 5; l = 'in her own bed. ugh'; }
-    else if (Math.abs(run.poopX - RUG.mx) < 62){ j = 100; l = 'right on the medallion'; }
-    else if (run.poopX > RUG.x0 && run.poopX < RUG.x1){ j = 60; l = 'on the rug'; }
-    else { j = 25; l = 'on the parquet. meh'; }
-    run.poopJoy = j; run.poopLabel = l; g.poopDone = true; g.p.mode = Math.abs(g.p.x - BED_X) < 30 ? 'bed' : 'idle';
-    drawEvidence(); addJoy(j, l);
+    const size = g.squatSize, x = g.p.x - g.p.dir * 26;
+    let mult, l, bed = false;
+    if (Math.abs(x - BED_X) < 60){ mult = .2; l = 'in her own bed. ugh'; bed = true; }
+    else if (Math.abs(x - RUG.mx) < 62){ mult = 3; l = 'on the medallion!'; }
+    else if (x > RUG.x0 && x < RUG.x1){ mult = 2; l = 'on the rug'; }
+    else { mult = 1; l = 'on the parquet'; }
+    const j = Math.round(mult * (8 + 32 * size));
+    run.poops.push({x, size, bed, dy: Math.round(rnd(-4, 8))});
+    if (mult === 3 && size >= .7) run.best = 'a BIG one right on the medallion';
+    else if (mult === 3 && !run.best) run.best = 'one on the medallion';
+    g.need = 0; g.p.mode = g.wasBed ? 'bed' : 'idle';
+    drawEvidence(); addJoy(j, (size >= .7 ? 'BIG one, ' : '') + l);
   }
   function startClimb(){ const p = g.p; p.mode = 'climb'; p.tx = null; p.hop = {from: GY, to: GY_SOFA, t: 0, dur: .45, arc: 40}; p.onSofa = true; SFX.boing(); }
   function jumpZone(){ return [.62, .8]; }
@@ -762,6 +775,7 @@
       if (Math.abs(d) < 3){
         p.x = p.tx; p.tx = null;
         p.mode = (!p.onSofa && Math.abs(p.x - BED_X) < 30) ? 'bed' : 'idle';
+        if (g.toDoor){ g.toDoor = false; if (Math.abs(p.x - GDOOR) < 8) startScratch(); }
         if (p.mode === 'bed'){ p.dir = 1; }
       } else {
         p.dir = Math.sign(d); p.x += Math.sign(d) * Math.min(Math.abs(d), p.speed * dt);
@@ -790,15 +804,14 @@
           say('nobody comes…', 1.8);
         }
       }
-      if (!g.poopDone && p.mode !== 'squat'){
-        const before = g.need; g.need = clamp(g.need + dt / 40, 0, 1);
-        if (before < .4 && g.need >= .4){ say('need to go…', 1.8); SFX.huh(); }
-        if (before < .8 && g.need >= .8){ say('NEED TO GO!', 1.8); SFX.huh(); }
-        if (g.need >= 1 && !BUSY.includes(p.mode)){ if (p.onSofa) hopDown(); say('oops…', 1.6); startSquat(); }
+      if (p.mode !== 'squat'){
+        const before = g.need; g.need = clamp(g.need + dt / (p.mode === 'bed' && goalDone() ? 22 : 9), 0, 1);
+        if (before < .85 && g.need >= .85){ say('NEED TO GO!', 1.6); SFX.huh(); }
+        if (g.need >= 1 && !BUSY.includes(p.mode)){ say('oops…', 1.6); startSquat(); }
       }
       if (p.mode === 'squat'){
         g.squat += dt;
-        if (g.squat >= 3) finishPoop();
+        if (g.squat >= g.squatDur) finishPoop();
       }
     }
     if (R.key === 'lota'){
@@ -868,7 +881,7 @@
     let lift = 0, bodyRot = 0, headRot = Math.sin(tt*2)*2, legA = moving ? Math.sin(p.walkPhase)*24 : 0;
     let backFold = 0, tailRot = Math.sin(tt*5)*10, legsOn = true, eyesShut = false;
     if (moving && p.speed > 260) lift = -Math.abs(Math.sin(p.walkPhase))*6;
-    if (g.R.key === 'rug' && g.need >= .4 && !g.poopDone && (m === 'idle' || m === 'walk')){ headRot = 22 + Math.sin(tt*14)*5; }
+    if (g.R.key === 'rug' && g.need >= .85 && (m === 'idle' || m === 'walk')){ headRot = 22 + Math.sin(tt*14)*5; }
     if (listening && (m === 'idle' || m === 'walk')) headRot = -14;
     if (m === 'scratch'){ bodyRot = -30; lift = -10; headRot = -10; legA = Math.sin(tt*28)*30; tailRot = Math.sin(tt*20)*20; }
     if (m === 'squat'){ bodyRot = -16; backFold = 1; tailRot = -28; headRot = -6; legA = 0; }
@@ -900,7 +913,7 @@
       else if (m === 'scratch') txt = 'scratch scratch';
       else if (listening && m !== 'bed') txt = '!';
       else if (m === 'bed' && sn) txt = 'z z z';
-      else if (g.R.key === 'rug' && g.need >= .8 && !g.poopDone && m !== 'bed') txt = 'sniff sniff';
+      else if (g.R.key === 'rug' && g.need >= .85 && m !== 'bed') txt = 'sniff sniff';
     }
     if (txt){
       P.pbText.textContent = txt;
@@ -936,9 +949,10 @@
     actBtn.classList.toggle('off', !a.ok); actBtn.classList.toggle('hot', !!a.hot);
     // meter
     const R = g.R; let lab = '', val = 0;
-    if (R.key === 'rug'){ lab = g.poopDone ? 'Done' : m === 'squat' ? 'Going…' : g.need >= .8 ? 'Needs to go: NOW' : g.need >= .4 ? 'Needs to go: could go' : 'Needs to go: not yet'; val = g.poopDone ? 1 : g.need; }
+    if (R.key === 'rug'){ lab = `Poops ${livingPoops()}/3 · ` + (m === 'squat' ? 'going…' : 'next: ' + sizeWord(g.need)); val = m === 'squat' ? 1 - g.squat / g.squatDur : g.need; }
     if (R.key === 'lota'){ const n = run.cushions.filter(c => c.hp <= 0).length; lab = `Cushions ${n} / 5`; const i = nearestCushion(); val = n / 5 + (i >= 0 && m === 'tug' ? (1 - run.cushions[i].hp) / 5 : 0); }
     if (R.key === 'monkey'){ lab = !run.monkeyGrabbed ? 'Monkey: on the shelf' : `Monkey: ${['whole','one ear','one arm','stuffing out','one eye'][run.monkeyStage]}`; val = run.monkeyStage / 4 + (g.hasMonkey && run.monkeyStage < 4 ? g.chewP / 2.2 / 4 : 0); }
+    $('controls').classList.toggle('three', R.key === 'rug');
     $('meterLab').textContent = lab; $('meterFill').style.width = (clamp(val, 0, 1) * 100).toFixed(1) + '%';
   }
 
@@ -972,7 +986,7 @@
     g.over = true;
     const k = g.R.key, nC = run.cushions.filter(c => c.hp <= 0).length;
     const lines = {
-      rug: 'They\'re home, and she held it all afternoon. They take her straight into the garden and she goes by the bushes, like a good dog. Very disappointing.',
+      rug: livingPoops() ? `Only ${livingPoops()} in the living room. That's not misbehaving, that's an accident. Puppies have accidents.` : 'Not one in the living room. Very disappointing.',
       lota: nC ? `Only ${nC} ${nC === 1 ? 'cushion' : 'cushions'}. You can turn ${nC === 1 ? 'it' : 'them'} over and nobody notices. That isn't misbehaving, that's wear and tear.` : 'Not a single cushion. She spent the afternoon asleep. Good dog.',
       monkey: run.monkeyGrabbed ? 'She got him down but never really chewed. Not a crime. More of a cuddle.' : 'The monkey is still on the shelf, smiling. He has no idea.'
     };
@@ -988,7 +1002,7 @@
     g.over = true; paused = true; SFX.win(); confetti(40);
     const k = g.R.key;
     const body = {
-      rug: `She went <b>${run.poopLabel}</b>. When the door opened she was asleep in her bed. Of course.${run.scratched ? ' (She did scratch at the garden door first. Nobody came.)' : ''}`,
+      rug: `<b>${livingPoops()}</b> poops in the living room${run.best ? ', including ' + run.best : ''}. When the door opened she was asleep in her bed. Of course.${run.scratched ? ' (She did scratch at the garden door. Nobody came.)' : ''}`,
       lota: `${run.cushions.filter(c => c.hp <= 0).length} of 5 cushions shredded. The living room looks like it snowed. When the door opened she was asleep in her bed. Of course.`,
       monkey: `The little green monkey: <b>${['whole','missing an ear','missing an ear and an arm','missing an ear, an arm and most of his stuffing','missing an ear, an arm, his stuffing and one eye'][run.monkeyStage]}</b>. He is in her bed, under her. She is asleep. Of course.`
     }[k];
@@ -1035,7 +1049,7 @@
   // ---------- finale: the scale ----------
   function crimes(){
     const list = [];
-    list.push({icon:'poop', label:'the rug', joy: run.joy.rug, guilt: run.scratched ? 15 : 30});
+    list.push({icon:'poop', label:'the rug', joy: run.joy.rug, guilt: Math.round(10 * run.poops.length * (run.scratched ? .5 : 1))});
     const nC = run.cushions.filter(c => c.hp <= 0).length;
     list.push({icon:'cushion', label:'the LOTA', joy: run.joy.lota, guilt: 25 * nC, n: nC});
     list.push({icon:'monkey', label:'the monkey', joy: run.joy.monkey, guilt: 30 + 60 * run.monkeyStage});
