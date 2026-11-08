@@ -215,7 +215,7 @@
     <p>Poppy is a good puppy. Mostly. Today she isn't.</p>
     <p><b>You are Poppy.</b> They've gone out. Three days, one living room, three crimes. Do what you like. Just be back in your bed, looking innocent, when they come home.</p>
     <div class="levels">
-      <div class="lvl r1 now"><div class="badge">1</div><div><span class="name">The rug</span><span class="what">She needs to go. Again and again. The garden door is shut.</span></div></div>
+      <div class="lvl r1 now"><div class="badge">1</div><div><span class="name">The rug</span><span class="what">She needs to go. The garden door is shut. And there is the rug.</span></div></div>
       <div class="lvl r2 locked"><div class="badge">2</div><div><span class="name">The LOTA</span><span class="what">Next day. The Eileen Gray sofa has five cushions. Not for long.</span></div></div>
       <div class="lvl r3 locked"><div class="badge">3</div><div><span class="name">The monkey</span><span class="what">The day after. Up on the shelf sits the little green knitted monkey. Everybody loves him.</span></div></div>
       <div class="lvl r4 locked"><div class="badge">⚖</div><div><span class="name">When they come home</span><span class="what">Poppy weighs her joy against her guilt.</span></div></div>
@@ -313,9 +313,9 @@
 
   const ROUNDS = [
     {key:'rug', name:'The rug', n:1, arrive:[58,76], falses:2,
-     goal:'At least 3 poops in the living room. Be in bed when they come home.',
-     intro:'They\'ve gone out. Poppy is alone, and she needs to go. Again and again. The garden door is shut.',
-     how:'Tap <b>Poop</b> whenever you like, wherever she is. The longer she waits, the <b>bigger</b> it gets, and the bigger it is, the longer it takes. Parquet is fine, the rug is better, the <b>medallion</b> in the middle of the rug is best. If she holds it too long it just happens, wherever she is. Or tap <b>Garden</b> and she scratches at the garden door. Nobody will come. But it counts for something later.'},
+     goal:'Do it on the rug. The bigger, the better.',
+     intro:'They\'ve gone out. Poppy is alone, and she needs to go. The garden door is shut. And there is the rug.',
+     how:'Tap <b>Poop</b> whenever you like, wherever she is. The longer she waits, the <b>bigger</b> it gets, but a big one takes longer, and they could come home any minute. The <b>medallion</b> in the middle of the rug is best. If she holds it too long it just happens, wherever she is. Or tap <b>Garden</b> and she scratches at the garden door. Nobody will come. But it counts for something later.'},
     {key:'lota', name:'The LOTA', n:2, arrive:[52,72], falses:2,
      goal:'Shred at least 3 of the 5 cushions. Be in bed when they come home.',
      intro:'Next day. The rug is clean again. They\'ve gone out. The sofa is an Eileen Gray LOTA, everyone says so, and it has five cushions.',
@@ -562,7 +562,14 @@
   function drawEvidence(){
     let s = sofaSVG(run.cushions);
     if (run.round === 2 && !run.monkeyGrabbed) s += `<g transform="translate(${SHELF.mx} ${SHELF.y}) scale(.95)">${monkeySVG(0)}</g>`;
-    if (run.round === 0) for (const q of run.poops) s += `<use href="#poop" transform="translate(${q.x.toFixed(0)} ${GY + 6 + q.dy}) scale(${(.16 + .26 * q.size).toFixed(2)})"/>`;
+    if (run.round === 0) for (const q of run.poops){
+      if (q.rug){
+        const sc = .62 + .5 * q.size, y = 392;
+        s += `<g class="pile"><use href="#poop" transform="translate(${q.x.toFixed(0)} ${y}) scale(${sc.toFixed(2)})"/>`;
+        for (let k = -1; k <= 1; k++) s += `<path d="M${q.x + k*22} ${y - 100*sc - 6} q-8 -12 0 -24 q8 -12 0 -24" stroke="#7fae3a" stroke-width="4" fill="none" stroke-linecap="round" opacity=".8"><animate attributeName="opacity" values=".2;.9;.2" dur="${1.4 + k*.3 + .6}s" repeatCount="indefinite"/></path>`;
+        s += `</g>`;
+      } else s += `<use href="#poop" transform="translate(${q.x.toFixed(0)} ${GY + 6 + q.dy}) scale(${(.16 + .22 * q.size).toFixed(2)})"/>`;
+    }
     for (const p of run.puffs) s += `<use href="#puff" transform="translate(${p.x.toFixed(0)} ${p.y.toFixed(0)}) scale(${p.s.toFixed(2)})"/>`;
     if (g && g.monkeyDropped) s += `<g transform="translate(${g.monkeyDropped} ${GY+4}) scale(.8)">${monkeySVG(run.monkeyStage)}</g>`;
     P.ev.innerHTML = s;
@@ -614,7 +621,7 @@
   }
   function goalDone(){
     const k = g.R.key;
-    if (k === 'rug') return livingPoops() >= 3;
+    if (k === 'rug') return run.poops.some(q => q.rug);
     if (k === 'lota') return run.cushions.filter(c => c.hp <= 0).length >= 3;
     return run.monkeyStage >= 1;
   }
@@ -629,7 +636,7 @@
     return {x: (ev.clientX - r.left) / r.width * 800, y: (ev.clientY - r.top) / r.height * 420};
   }
   scene.addEventListener('pointerdown', ev => {
-    if (paused || g.over) return; ac();
+    if (paused || g.over || g.endAt) return; ac();
     const {x, y} = svgX(ev); goTo(x, y);
   });
   function goTo(x, y = 380){
@@ -657,7 +664,7 @@
 
   const actBtn = $('actBtn');
   function actDown(){
-    if (paused || g.over) return; ac();
+    if (paused || g.over || g.endAt) return; ac();
     actHeld = true; actBtn.classList.add('held');
     const a = currentAction();
     if (!a.ok) { if (a.why) say(a.why, 1.2); return; }
@@ -715,17 +722,21 @@
   function startScratch(){ const p = g.p; p.mode = 'scratch'; g.scratchT = 0; p.tx = null; p.dir = p.x > GDOOR ? -1 : 1; }
   function finishPoop(){
     const size = g.squatSize, x = g.p.x - g.p.dir * 26;
-    let mult, l, bed = false;
+    let mult, l, bed = false, rug = false;
     if (Math.abs(x - BED_X) < 60){ mult = .2; l = 'in her own bed. ugh'; bed = true; }
-    else if (Math.abs(x - RUG.mx) < 62){ mult = 3; l = 'on the medallion!'; }
-    else if (x > RUG.x0 && x < RUG.x1){ mult = 2; l = 'on the rug'; }
-    else { mult = 1; l = 'on the parquet'; }
-    const j = Math.round(mult * (8 + 32 * size));
-    run.poops.push({x, size, bed, dy: Math.round(rnd(-4, 8))});
-    if (mult === 3 && size >= .7) run.best = 'a BIG one right on the medallion';
-    else if (mult === 3 && !run.best) run.best = 'one on the medallion';
+    else if (Math.abs(x - RUG.mx) < 62){ mult = 3; l = 'ON THE MEDALLION!'; rug = true; }
+    else if (x > RUG.x0 && x < RUG.x1){ mult = 2; l = 'on the rug!'; rug = true; }
+    else { mult = 1; l = 'on the parquet. not the rug'; }
+    const j = Math.round(mult * (10 + 40 * size));
+    run.poops.push({x: rug ? clamp(x, RUG.x0 + 60, RUG.x1 - 60) : x, size, bed, rug, dy: rug ? 0 : Math.round(rnd(-4, 8))});
+    if (rug) run.best = `${size >= .7 ? 'A BIG one' : size >= .35 ? 'A good one' : 'A small one'}, ${mult === 3 ? 'right on the medallion' : 'on the rug'}`;
     g.need = 0; g.p.mode = g.wasBed ? 'bed' : 'idle';
     drawEvidence(); addJoy(j, (size >= .7 ? 'BIG one, ' : '') + l);
+    if (rug){
+      SFX.win(); g.endAt = tt + 2.4; showAlarm(null); g.alarm = null;
+      // she steps away to admire it
+      g.p.tx = clamp(g.p.x + g.p.dir * 90, 60, 760); g.p.mode = 'walk'; g.p.speed = 160;
+    }
   }
   function startClimb(){ const p = g.p; p.mode = 'climb'; p.tx = null; p.hop = {from: GY, to: GY_SOFA, t: 0, dur: .45, arc: 40}; p.onSofa = true; SFX.boing(); }
   function jumpZone(){ return [.62, .8]; }
@@ -844,6 +855,7 @@
       } else if (p.mode === 'chew') p.mode = 'idle';
       else if (p.mode === 'bedchew') p.mode = 'bed';
     }
+    if (g.endAt){ if (tt >= g.endAt) roundWon(); return; }
     // are they coming home?
     if (!g.alarm && g.alarms.length && g.elapsed >= g.alarms[0].t){
       const a = g.alarms.shift(); g.alarm = {type: a.type, i: 0, t: 0}; alarmStage();
@@ -949,7 +961,7 @@
     actBtn.classList.toggle('off', !a.ok); actBtn.classList.toggle('hot', !!a.hot);
     // meter
     const R = g.R; let lab = '', val = 0;
-    if (R.key === 'rug'){ lab = `Poops ${livingPoops()}/3 · ` + (m === 'squat' ? 'going…' : 'next: ' + sizeWord(g.need)); val = m === 'squat' ? 1 - g.squat / g.squatDur : g.need; }
+    if (R.key === 'rug'){ lab = m === 'squat' ? 'Going…' : 'Next one: ' + sizeWord(g.need); val = m === 'squat' ? 1 - g.squat / g.squatDur : g.need; }
     if (R.key === 'lota'){ const n = run.cushions.filter(c => c.hp <= 0).length; lab = `Cushions ${n} / 5`; const i = nearestCushion(); val = n / 5 + (i >= 0 && m === 'tug' ? (1 - run.cushions[i].hp) / 5 : 0); }
     if (R.key === 'monkey'){ lab = !run.monkeyGrabbed ? 'Monkey: on the shelf' : `Monkey: ${['whole','one ear','one arm','stuffing out','one eye'][run.monkeyStage]}`; val = run.monkeyStage / 4 + (g.hasMonkey && run.monkeyStage < 4 ? g.chewP / 2.2 / 4 : 0); }
     $('controls').classList.toggle('three', R.key === 'rug');
@@ -986,7 +998,7 @@
     g.over = true;
     const k = g.R.key, nC = run.cushions.filter(c => c.hp <= 0).length;
     const lines = {
-      rug: livingPoops() ? `Only ${livingPoops()} in the living room. That's not misbehaving, that's an accident. Puppies have accidents.` : 'Not one in the living room. Very disappointing.',
+      rug: 'Not on the rug. A puppy accident on the parquet, wiped up in a minute. That\'s not misbehaving. Very disappointing.',
       lota: nC ? `Only ${nC} ${nC === 1 ? 'cushion' : 'cushions'}. You can turn ${nC === 1 ? 'it' : 'them'} over and nobody notices. That isn't misbehaving, that's wear and tear.` : 'Not a single cushion. She spent the afternoon asleep. Good dog.',
       monkey: run.monkeyGrabbed ? 'She got him down but never really chewed. Not a crime. More of a cuddle.' : 'The monkey is still on the shelf, smiling. He has no idea.'
     };
@@ -1002,7 +1014,7 @@
     g.over = true; paused = true; SFX.win(); confetti(40);
     const k = g.R.key;
     const body = {
-      rug: `<b>${livingPoops()}</b> poops in the living room${run.best ? ', including ' + run.best : ''}. When the door opened she was asleep in her bed. Of course.${run.scratched ? ' (She did scratch at the garden door. Nobody came.)' : ''}`,
+      rug: `<b>${run.best}.</b> It's enormous. It steams a little. It will be there when they come home.${run.scratched ? ' (She did scratch at the garden door first. Nobody came.)' : ''}`,
       lota: `${run.cushions.filter(c => c.hp <= 0).length} of 5 cushions shredded. The living room looks like it snowed. When the door opened she was asleep in her bed. Of course.`,
       monkey: `The little green monkey: <b>${['whole','missing an ear','missing an ear and an arm','missing an ear, an arm and most of his stuffing','missing an ear, an arm, his stuffing and one eye'][run.monkeyStage]}</b>. He is in her bed, under her. She is asleep. Of course.`
     }[k];
@@ -1010,7 +1022,7 @@
     setTimeout(() => showMsg(`
       <div class="hero"><svg class="face" viewBox="0 0 100 100"><use href="#poppyFace"/></svg>${k === 'monkey' ? `<svg class="mk" viewBox="-40 -64 80 70">${monkeySVG(run.monkeyStage)}</svg>` : ''}</div>
       <p class="sub">Round ${g.R.n} · ${g.R.name}</p>
-      <div class="stamp ok">ASLEEP</div>
+      <div class="stamp ok">${k === 'rug' ? 'ON THE RUG' : 'ASLEEP'}</div>
       <p>${body}</p>
       <div class="tally"><span class="j">+${run.joy[k]} joy</span></div>
       <button class="btn" id="mBtn">${isLast ? 'That evening' : 'Next: ' + ROUNDS[run.round + 1].name}</button>`,
@@ -1049,7 +1061,7 @@
   // ---------- finale: the scale ----------
   function crimes(){
     const list = [];
-    list.push({icon:'poop', label:'the rug', joy: run.joy.rug, guilt: Math.round(10 * run.poops.length * (run.scratched ? .5 : 1))});
+    list.push({icon:'poop', label:'the rug', joy: run.joy.rug, guilt: Math.round((20 + 10 * run.poops.length) * (run.scratched ? .5 : 1))});
     const nC = run.cushions.filter(c => c.hp <= 0).length;
     list.push({icon:'cushion', label:'the LOTA', joy: run.joy.lota, guilt: 25 * nC, n: nC});
     list.push({icon:'monkey', label:'the monkey', joy: run.joy.monkey, guilt: 30 + 60 * run.monkeyStage});
