@@ -141,10 +141,11 @@
   .said{display:inline-block; position:relative; background:#fff; border:3px solid #3f3a4a; border-radius:18px; padding:8px 16px; font-family:'Fredoka',sans-serif; font-weight:700; font-size:20px; margin:8px 0 4px; animation:stampIn .45s cubic-bezier(.2,1.6,.4,1);}
   .said:after{content:""; position:absolute; left:50%; bottom:-14px; margin-left:-8px; border:8px solid transparent; border-top-color:#3f3a4a;}
   #heart{position:relative; width:170px; height:170px; margin:6px auto 0;}
-  #heart svg{position:absolute; inset:0; width:100%; height:100%; transition:opacity .18s ease, transform .25s ease;}
+  #heart svg{position:absolute; inset:0; width:100%; height:100%; transition:opacity .6s ease, transform .9s ease;}
   #bal{display:flex; width:100%; max-width:300px; height:14px; border-radius:8px; overflow:hidden; margin:8px auto 0; background:#eee4d4;}
   #balJ{background:linear-gradient(90deg,#ffcf3f,#ff8a2e); transition:width .8s ease;}
   #balG{background:linear-gradient(90deg,#9aa9cf,#6b7fa8); transition:width .8s ease;}
+  .finScene{width:100%; max-width:360px; height:auto; display:block; margin:10px auto 0; background:linear-gradient(#fbeedb 0 70%, #c8935c 70% 100%); border-radius:16px;}
   .moral{font-family:'Fredoka',sans-serif; font-weight:500; font-size:16px; margin:12px 0 2px;}
   .choices{display:flex; flex-direction:column; gap:8px; margin:12px 0 4px;}
   .choice{display:block; width:100%; text-align:left; background:#fff; border:2px solid #efe6d6; border-radius:16px; padding:11px 14px; cursor:pointer; font-family:'Nunito',sans-serif; font-size:14px; color:var(--muted); line-height:1.35;}
@@ -307,7 +308,7 @@
     <div id="alarm"></div>
     <div id="tapHint">👆 tap the room to move Poppy</div>
   </div>
-  <div id="meterWrap"><span id="meterLab"></span><div id="meter"><div id="meterFill"></div></div></div>
+  <div id="meterWrap"><svg id="mkStat" viewBox="-40 -64 80 70" style="width:44px;height:40px;display:none"></svg><span id="meterLab"></span><div id="meter"><div id="meterFill"></div></div></div>
   <div id="controls">
     <button class="ctl" id="bedBtn">🛏️ To bed<small>look innocent</small></button>
     <button class="ctl" id="doorBtn">🚪 Garden<small>scratch</small></button>
@@ -399,37 +400,50 @@
   // ---------- monkey ----------
   // stage 0 intact … 4 wrecked; stitched = repaired (crooked)
   function monkeySVG(stage = 0, stitched = false){
-    const G = '#6fae4f', D = '#4f8a38', M = '#e9ddb4';
-    const rib = (x, y, w, h) => { let s = ''; for (let i = x - w + 4; i < x + w - 2; i += 5) s += `<path d="M${i} ${y-h+3} v${2*h-6}" stroke="${D}" stroke-width="1.3" opacity=".55"/>`; return s; };
-    const stitch = (x1, y1, x2, y2) => { let s = `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="#8b2f3c" stroke-width="1.6"/>`; const n = 4; for (let i = 0; i <= n; i++){ const x = x1 + (x2-x1)*i/n, y = y1 + (y2-y1)*i/n; s += `<path d="M${x-2.5} ${y-3} l5 6" stroke="#8b2f3c" stroke-width="1.6" stroke-linecap="round"/>`; } return s; };
-    let s = `<g class="monkey">`;
-    // tail
-    s += `<path d="M14 -10 C 34 -8, 36 -30, 24 -32 C 16 -33, 18 -24, 24 -24" stroke="${G}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
-    // legs
-    s += `<ellipse cx="-9" cy="-3" rx="7" ry="5" fill="${G}"/><ellipse cx="9" cy="-3" rx="7" ry="5" fill="${G}"/>`;
-    // body
-    s += `<ellipse cx="0" cy="-16" rx="14" ry="15" fill="${G}"/>${rib(0, -16, 13, 13)}<ellipse cx="0" cy="-13" rx="8" ry="9" fill="${M}" opacity=".9"/>`;
-    // arms
-    s += `<path d="M-12 -24 C -24 -18, -24 -6, -18 -2" stroke="${G}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
-    if (stage >= 2 && !stitched) s += `<path d="M12 -22 C 18 -10, 22 0, 26 6" stroke="${G}" stroke-width="6" fill="none" stroke-linecap="round"/><use href="#puff" transform="translate(13 -22) scale(.45)"/>`;
-    else s += `<path d="M12 -24 C 24 -18, 24 -6, 18 -2" stroke="${G}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
-    if (stitched) s += stitch(9, -27, 15, -21);
-    // head (tilted if wrecked)
-    s += `<g transform="rotate(${stage >= 4 && !stitched ? 16 : stitched ? -7 : 0} 0 -38)">`;
-    if (!(stage >= 1 && !stitched)) s += `<circle cx="-15" cy="-44" r="6.5" fill="${G}"/><circle cx="-15" cy="-44" r="3.5" fill="${M}"/>`;
-    else s += `<use href="#puff" transform="translate(-13 -46) scale(.42)"/>`;
-    s += `<circle cx="15" cy="-44" r="6.5" fill="${G}"/><circle cx="15" cy="-44" r="3.5" fill="${M}"/>`;
-    s += `<circle cx="0" cy="-42" r="14" fill="${G}"/>${rib(0, -42, 12, 11)}`;
-    s += `<ellipse cx="0" cy="-37" rx="9" ry="7" fill="${M}"/>`;
-    s += `<circle cx="-5" cy="-46" r="2.6" fill="#1d1612"/>`;
-    if (stitched) s += `<circle cx="5" cy="-46" r="2.9" fill="#c0392b"/><circle cx="5" cy="-46" r="1" fill="#7a1f17"/>` + stitch(-17, -48, -10, -41);
-    else if (stage < 4) s += `<circle cx="5" cy="-46" r="2.6" fill="#1d1612"/>`;
-    else s += `<path d="M3 -46 h4" stroke="${D}" stroke-width="1.4"/>`;
-    s += `<path d="M-3 -35 Q0 -32 3 -35" stroke="#5a3b1e" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
-    s += `</g>`;
-    if (stage >= 3 && !stitched) s += `<use href="#puff" transform="translate(-4 -14) scale(.6)"/><use href="#puff" transform="translate(7 -8) scale(.45)"/>`;
-    if (stitched) s += stitch(-8, -20, 7, -10);
-    return s + `</g>`;
+    const wet = stitched ? 0 : stage;
+    const G = ['#6fae4f','#64a345','#5a963d','#518a36','#477c2f'][wet], D = '#3f6f2a', M = ['#e9ddb4','#ded0a2','#d3c392','#c8b682','#bba873'][wet];
+    const rib = (x, y, w, h) => { let r = ''; for (let i = x - w + 4; i < x + w - 2; i += 5) r += `<path d="M${i} ${y-h+3} v${2*h-6}" stroke="${D}" stroke-width="1.3" opacity=".5"/>`; return r; };
+    const stitch = (x1, y1, x2, y2) => { let r = `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="#8b2f3c" stroke-width="1.6"/>`; for (let i = 0; i <= 4; i++){ const x = x1 + (x2-x1)*i/4, y = y1 + (y2-y1)*i/4; r += `<path d="M${x-2.5} ${y-3} l5 6" stroke="#8b2f3c" stroke-width="1.6" stroke-linecap="round"/>`; } return r; };
+    const puff = (x, y, k) => `<use href="#puff" transform="translate(${x} ${y}) scale(${k})"/>`;
+    const torn = !stitched;
+    let o = `<g class="monkey"${torn && stage >= 3 ? ' transform="scale(1.06 .9)"' : ''}>`;
+    // tail (chewed off at stage 4)
+    if (!(torn && stage >= 4)) o += `<path d="M14 -10 C 34 -8, 36 -30, 24 -32 C 16 -33, 18 -24, 24 -24" stroke="${G}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+    else o += `<path d="M14 -10 C 20 -9, 24 -11, 26 -14" stroke="${G}" stroke-width="5" fill="none" stroke-linecap="round"/>` + puff(27, -15, .3);
+    o += `<ellipse cx="-9" cy="-3" rx="7" ry="5" fill="${G}"/><ellipse cx="9" cy="-3" rx="7" ry="5" fill="${G}"/>`;
+    // body; belly torn open from stage 3
+    o += `<ellipse cx="0" cy="-16" rx="14" ry="15" fill="${G}"/>${rib(0, -16, 13, 13)}`;
+    if (torn && stage >= 3) o += `<path d="M-8 -22 L-3 -17 L-9 -12 L-2 -7 L-7 -2 L6 -3 L2 -9 L8 -14 L3 -19 L7 -24 Z" fill="#fff" stroke="${D}" stroke-width="1.2"/>` + puff(-6, -12, .65) + puff(6, -6, .55) + puff(1, -20, .5);
+    else o += `<ellipse cx="0" cy="-13" rx="8" ry="9" fill="${M}" opacity=".9"/>`;
+    // arms: the right one comes off at stage 2
+    o += `<path d="M-12 -24 C -24 -18, -24 -6, -18 -2" stroke="${G}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+    if (torn && stage >= 2) o += puff(14, -23, .5);
+    else o += `<path d="M12 -24 C 24 -18, 24 -6, 18 -2" stroke="${G}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+    if (stitched) o += stitch(9, -27, 15, -21);
+    // head: half torn off at stage 4
+    const tilt = torn && stage >= 4 ? 34 : stitched ? -7 : 0;
+    if (torn && stage >= 4) o += puff(4, -30, .55);
+    o += `<g transform="rotate(${tilt} 6 -30)">`;
+    if (torn && stage >= 1) o += puff(-14, -47, .5) + `<path d="M-18 -42 l4 -4 l3 3 l3 -5" stroke="${D}" stroke-width="1.5" fill="none"/>`;
+    else o += `<circle cx="-15" cy="-44" r="6.5" fill="${G}"/><circle cx="-15" cy="-44" r="3.5" fill="${M}"/>`;
+    o += `<circle cx="15" cy="-44" r="6.5" fill="${G}"/><circle cx="15" cy="-44" r="3.5" fill="${M}"/>`;
+    o += `<circle cx="0" cy="-42" r="14" fill="${G}"/>${rib(0, -42, 12, 11)}`;
+    o += torn && stage >= 3 ? `<path d="M-9 -37 Q -9 -44 0 -44 Q 9 -44 9 -38 L 3 -34 L -2 -38 Z" fill="${M}"/>` : `<ellipse cx="0" cy="-37" rx="9" ry="7" fill="${M}"/>`;
+    o += `<circle cx="-5" cy="-46" r="2.6" fill="#1d1612"/>`;
+    if (stitched) o += `<circle cx="5" cy="-46" r="2.9" fill="#c0392b"/><circle cx="5" cy="-46" r="1" fill="#7a1f17"/>` + stitch(-17, -48, -10, -41);
+    else if (stage < 4) o += `<circle cx="5" cy="-46" r="2.6" fill="#1d1612"/>`;
+    else o += `<path d="M2 -48 l6 4 M8 -48 l-6 4" stroke="${D}" stroke-width="1.6" stroke-linecap="round"/>`;
+    o += `<path d="M-3 -35 Q0 ${torn && stage >= 2 ? -37 : -32} 3 -35" stroke="#5a3b1e" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
+    o += `</g>`;
+    if (stitched) o += stitch(-8, -20, 7, -10) + stitch(-3, -31, 9, -29);
+    return o + `</g>`;
+  }
+  // bits that come off him and stay on the floor
+  function partSVG(t){
+    if (t === 'ear') return `<circle r="6.5" fill="#64a345"/><circle r="3.5" fill="#ded0a2"/><use href="#puff" transform="translate(5 -3) scale(.3)"/>`;
+    if (t === 'arm') return `<path d="M-14 0 C -6 -8, 6 -8, 14 -2" stroke="#5a963d" stroke-width="6" fill="none" stroke-linecap="round"/><use href="#puff" transform="translate(-15 0) scale(.35)"/>`;
+    if (t === 'tail') return `<path d="M-12 0 C -2 -10, 10 -8, 12 -2" stroke="#477c2f" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+    return `<circle r="3" fill="#1d1612"/>`;
   }
   $('heroMonkey').innerHTML = monkeySVG(0);
 
@@ -462,7 +476,7 @@
           <g id="ppEye"><circle cx="67" cy="-99" r="3.4" fill="#1d1612"/><circle cx="68" cy="-100.2" r="1.1" fill="#fff"/></g>
           <path id="ppEyeShut" d="M63 -98 Q 67 -95 71 -98" stroke="#1d1612" stroke-width="2.4" fill="none" stroke-linecap="round" style="display:none"/>
           <path d="M78 -79 Q 84 -76 89 -79" stroke="#1d1612" stroke-width="2" fill="none" stroke-linecap="round"/>
-          <g id="ppMonkey" transform="translate(90 -60) rotate(-18) scale(.95)" style="display:none"></g>
+          <g id="ppMonkey" transform="translate(92 -58) rotate(-18) scale(1.3)" style="display:none"></g>
         </g>
       </g>
     </g>`;
@@ -571,7 +585,7 @@
   let keys = {}, actHeld = false, tapped = false;
 
   function newRun(){
-    run = {round: 0, poops: [], best: '', cushions: makeCushions(), monkeyStage: 0, monkeyGrabbed: false,
+    run = {round: 0, poops: [], best: '', parts: [], cushions: makeCushions(), monkeyStage: 0, monkeyGrabbed: false,
            puffs: [], joy: {rug: 0, lota: 0, monkey: 0}};
   }
 
@@ -579,9 +593,10 @@
     scene.innerHTML = `<g id="bg">${roomBG()}</g><g id="ev"></g>${poppySVG()}<path id="strip" d="" stroke="#6d8796" stroke-width="2" stroke-linejoin="round" style="display:none"/>
       <g id="jumpBar" style="display:none"><rect x="-50" y="0" width="100" height="12" rx="6" fill="#fff" stroke="#3f3a4a" stroke-width="2.5"/><rect id="jbZone" x="0" y="2" width="20" height="8" rx="3" fill="#69db7c"/><rect id="jbMark" x="-2" y="-4" width="5" height="20" rx="2" fill="#3f3a4a"/></g>
       <g id="pb" style="display:none"><rect id="pbRect" x="-50" y="-22" width="100" height="34" rx="16" fill="#fff" stroke="#3f3a4a" stroke-width="2.5"/><text id="pbText" x="0" y="1" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="600" font-size="19" fill="#3f3a4a"></text></g>
+      <g id="bedMonkey"></g>
       <g id="floats"></g>`;
     P = {};
-    ['pp','ppLift','ppHead','ppTail','ppLegs','legF1','legF2','legB1','legB2','ppEye','ppEyeShut','ppMonkey','ppShadow','ev','pb','pbRect','pbText','floats','strip','jumpBar','jbZone','jbMark'].forEach(id => P[id] = document.getElementById(id));
+    ['pp','ppLift','ppHead','ppTail','ppLegs','legF1','legF2','legB1','legB2','ppEye','ppEyeShut','ppMonkey','ppShadow','ev','pb','pbRect','pbText','floats','strip','bedMonkey','jumpBar','jbZone','jbMark'].forEach(id => P[id] = document.getElementById(id));
   }
   let P = {};
 
@@ -597,6 +612,7 @@
       } else s += `<use href="#poop" transform="translate(${q.x.toFixed(0)} ${GY + 6 + q.dy}) scale(${(.16 + .22 * q.size).toFixed(2)})"/>`;
     }
     for (const p of run.puffs) s += `<use href="#puff" transform="translate(${p.x.toFixed(0)} ${p.y.toFixed(0)}) scale(${p.s.toFixed(2)})"/>`;
+    if (run.round === 2) for (const q of run.parts) s += `<g transform="translate(${q.x.toFixed(0)} ${q.y.toFixed(0)}) rotate(${q.r.toFixed(0)}) scale(1.3)">${partSVG(q.t)}</g>`;
     if (g && g.monkeyDropped) s += `<g transform="translate(${g.monkeyDropped} ${GY+4}) scale(.8)">${monkeySVG(run.monkeyStage)}</g>`;
     P.ev.innerHTML = s;
   }
@@ -727,7 +743,7 @@
   }
   function currentAction(){
     const p = g.p, k = g.R.key, busy = BUSY.includes(p.mode);
-    if (busy) return {ok:false, label:'…', sub:'busy'};
+    if (busy || g.endAt) return {ok:false, label:'…', sub: g.endAt ? '' : 'busy'};
     if (k === 'monkey' && g.hasMonkey && run.monkeyStage < 4) return {ok:true, kind:'chew', label:'Chew', sub:'hold'};
     if (goalDone() && p.mode === 'bed' && !g.alarm) return {ok:true, kind:'wait', label:'Wait for them', sub:'curl up and sleep'};
     if (goalDone() && p.mode === 'bed') return {ok:false, label:'Asleep', sub:'of course'};
@@ -882,7 +898,11 @@
         if (Math.random() < dt * 7) SFX.chew();
         if (g.chewP >= 2.2){
           g.chewP = 0; run.monkeyStage++; P.ppMonkey.innerHTML = monkeySVG(run.monkeyStage);
-          spawnPuffs(p.x + p.dir * 50, run.monkeyStage === 3 ? 6 : 2, p.onSofa ? 330 : GY - 6); drawEvidence(); SFX.tear();
+          spawnPuffs(p.x + p.dir * 50, run.monkeyStage === 3 ? 8 : 3, p.onSofa ? 330 : GY - 6); SFX.tear();
+          const bit = [null, 'ear', 'arm', null, 'eye'][run.monkeyStage];
+          if (bit) run.parts.push({t: bit, x: clamp(p.x + p.dir * rnd(40, 90), 30, 770), y: GY + rnd(4, 18), r: rnd(-40, 40)});
+          if (run.monkeyStage === 4) run.parts.push({t: 'tail', x: clamp(p.x + p.dir * rnd(20, 60), 30, 770), y: GY + rnd(6, 18), r: rnd(-30, 30)});
+          drawEvidence();
           const lines = ['', 'an ear!', 'an arm…', 'his stuffing!', 'his eye.'];
           addJoy(40, lines[run.monkeyStage]);
           if (run.monkeyStage >= 4){
@@ -964,7 +984,10 @@
       P.strip.setAttribute('d', `M${ax-12} ${ay} Q ${(ax+mx)/2} ${(ay+my)/2 + 10} ${mx-3} ${my} L ${mx+3} ${my+4} Q ${(ax+mx)/2 + 6} ${(ay+my)/2 + 16} ${ax+12} ${ay} Z`);
       P.strip.setAttribute('fill', col); P.strip.style.display = '';
     } else P.strip.style.display = 'none';
-    P.ppMonkey.style.display = g.hasMonkey && m !== 'bed' ? '' : 'none';
+    const onBed = g.hasMonkey && (m === 'bed' || m === 'bedchew');
+    P.ppMonkey.style.display = g.hasMonkey && !onBed ? '' : 'none';
+    const bk = onBed ? 'b' + run.monkeyStage + (m === 'bedchew' ? 'c' : '') : '';
+    if (P.bedMonkey._k !== bk){ P.bedMonkey._k = bk; P.bedMonkey.innerHTML = onBed ? `<g transform="translate(${BED_X + 52} ${GY + 2}) rotate(${m === 'bedchew' ? -30 : -78}) scale(1.25)">${monkeySVG(run.monkeyStage)}</g>` : ''; }
 
     // speech bubble
     let txt = tt < g.bubbleUntil ? g.bubble : null;
@@ -1015,6 +1038,9 @@
     if (R.key === 'lota'){ const n = run.cushions.filter(c => c.hp <= 0).length; lab = `Cushions ${n} / 5`; const i = nearestCushion(); val = n / 5 + (i >= 0 && m === 'tug' ? (1 - run.cushions[i].hp) / 5 : 0); }
     if (R.key === 'monkey'){ lab = !run.monkeyGrabbed ? 'Monkey: on the shelf' : `Monkey: ${['whole','one ear','one arm','stuffing out','one eye'][run.monkeyStage]}`; val = run.monkeyStage / 4 + (g.hasMonkey && run.monkeyStage < 4 ? g.chewP / 2.2 / 4 : 0); }
     $('controls').classList.toggle('three', R.key === 'rug');
+    const mk = $('mkStat'), mkShow = R.key === 'monkey' && run.monkeyGrabbed;
+    mk.style.display = mkShow ? '' : 'none';
+    if (mkShow && mk._s !== run.monkeyStage){ mk._s = run.monkeyStage; mk.innerHTML = monkeySVG(run.monkeyStage); }
     $('meterLab').textContent = lab; $('meterFill').style.width = (clamp(val, 0, 1) * 100).toFixed(1) + '%';
   }
 
@@ -1130,13 +1156,56 @@
     if (!fin.on) return;
     requestAnimationFrame(heartLoop);
     const tot = fin.J + fin.G, js = tot ? fin.J / tot : .5;
-    const u = (now / 1400) % 1, joy = u < js;
-    const wob = Math.sin(now / 90) * 3;
+    const u = (now / 4800) % 1, joy = u < js;
+    const wob = Math.sin(now / 420) * 3;
     $('hJoy').style.opacity = joy ? 1 : 0; $('hGuilt').style.opacity = joy ? 0 : 1;
     $('hJoy').style.transform = `rotate(${(-6 + wob).toFixed(1)}deg) translateY(-4px)`;
     $('hGuilt').style.transform = `rotate(${(5 - wob/2).toFixed(1)}deg) translateY(6px) scale(.96)`;
   }
   const wait = ms => new Promise(r => setTimeout(r, ms));
+
+  // a still Poppy for the little films: same drawing, no ids, posed by arguments
+  function poppyFig({monkey = null, shut = false, head = 0, tail = 0, lift = 0, legs = true, wag = false, blink = false} = {}){
+    let f = poppySVG().replace(/ id="(\w+)"/g, ' class="$1"');
+    f = f.replace('<g class="ppLift">', `<g class="ppLift" transform="translate(0 ${lift})">`);
+    f = f.replace('<g class="ppHead">', `<g class="ppHead" transform="rotate(${head} 40 -70)">`);
+    f = f.replace('<g class="ppTail">', `<g class="ppTail" transform="rotate(${tail} -46 -62)">` + (wag ? `<animateTransform attributeName="transform" type="rotate" values="${tail-25} -46 -62;${tail+25} -46 -62;${tail-25} -46 -62" dur=".35s" repeatCount="indefinite"/>` : ''));
+    if (!legs) f = f.replace('<g class="ppLegs">', '<g class="ppLegs" opacity="0">').replace('class="ppShadow"', 'class="ppShadow" opacity="0"');
+    if (shut) f = f.replace('<g class="ppEye">', '<g class="ppEye" opacity="0">').replace('style="display:none"', '');
+    if (blink) f = f.replace('<g class="ppEye">', '<g class="ppEye"><animate attributeName="opacity" values="0;0;0;1;1;0" dur="3.2s" repeatCount="indefinite"/>').replace(/<path class="ppEyeShut"([^>]*?) style="display:none"\/>/, '<path class="ppEyeShut"$1><animate attributeName="opacity" values="1;1;1;0;0;1" dur="3.2s" repeatCount="indefinite"/></path>');
+    f = f.replace(/<g class="ppMonkey"([^>]*) style="display:none"><\/g>/, monkey !== null ? `<g class="ppMonkey"$1>${monkeySVG(monkey)}</g>` : '');
+    return f;
+  }
+  const legsOf = x => `<g transform="translate(${x} 0)"><rect x="-18" y="20" width="16" height="104" rx="6" fill="#3d4a6b"/><rect x="4" y="20" width="16" height="104" rx="6" fill="#34405e"/><ellipse cx="-14" cy="126" rx="15" ry="6" fill="#2a2a2a"/><ellipse cx="14" cy="126" rx="15" ry="6" fill="#2a2a2a"/></g>`;
+  function film(kind, st){
+    const W = 360, F = 126;
+    let b = '';
+    if (kind === 'back'){
+      b = `${legsOf(310)}
+        <g><animateTransform attributeName="transform" type="translate" from="20 ${F}" to="180 ${F}" dur="3s" fill="freeze"/>
+          <g transform="scale(.6)"><g>${poppyFig({monkey: st, head: 12, tail: 40})}<animateTransform attributeName="transform" type="translate" values="0 0;0 -6;0 0" dur=".4s" repeatCount="7"/></g></g></g>
+        <g opacity="0" transform="translate(268 ${F + 4}) rotate(-80) scale(.85)">${monkeySVG(st)}<set attributeName="opacity" to="1" begin="3s" fill="freeze"/></g>`;
+      // after she lays him down, her mouth is empty: overlay a fresh figure without him
+      b = b.replace(`${poppyFig({monkey: st, head: 12, tail: 40})}`, `<g>${poppyFig({monkey: st, head: 12, tail: 40})}<set attributeName="opacity" to="0" begin="3s" fill="freeze"/></g><g opacity="0">${poppyFig({head: 26, tail: 60, lift: 6})}<set attributeName="opacity" to="1" begin="3s" fill="freeze"/></g>`);
+    } else if (kind === 'hide'){
+      b = `<ellipse cx="180" cy="${F+2}" rx="92" ry="20" fill="#8b5a2b"/><ellipse cx="180" cy="${F-6}" rx="80" ry="14" fill="#f4c7c3"/>
+        <g transform="translate(250 ${F-4}) rotate(-80) scale(.9)">${monkeySVG(st)}</g>
+        <g transform="translate(170 ${F}) scale(.75)">${poppyFig({blink: true, head: 20, tail: 14, lift: 22, legs: false})}</g>`;
+    } else if (kind === 'chew'){
+      b = `<g transform="translate(160 ${F}) scale(.75)"><g>${poppyFig({monkey: st, head: 18, wag: true})}<animateTransform attributeName="transform" type="rotate" values="-3 40 -60;3 40 -60;-3 40 -60" dur=".22s" repeatCount="indefinite"/></g></g>`;
+      for (let k = 0; k < 6; k++) b += `<use href="#puff" transform="translate(235 70)" opacity="0"><animateTransform attributeName="transform" type="translate" values="235 70;${200 + k*20} ${20 + (k%3)*12}" dur="1.2s" begin="${k*.2}s" repeatCount="indefinite"/><animate attributeName="opacity" values="1;0" dur="1.2s" begin="${k*.2}s" repeatCount="indefinite"/></use>`;
+    } else if (kind === 'treat'){
+      b = `${legsOf(320)}<g transform="translate(150 ${F}) scale(.75)">${poppyFig({head: -16, tail: 0, wag: true})}</g>
+        <g><animateTransform attributeName="transform" type="translate" values="300 30;250 10;222 50" keyTimes="0;.5;1" dur="1s" fill="freeze"/><g transform="scale(.45) translate(-50 -36)"><use href="#bone"/></g><set attributeName="opacity" to="0" begin="1.05s" fill="freeze"/></g>`;
+      for (let k = 0; k < 3; k++) b += `<text x="${190 + k*24}" y="60" font-size="22" fill="#ff7a59" opacity="0">♥<animate attributeName="opacity" values="0;1;0" dur="1.6s" begin="${1.1 + k*.35}s" repeatCount="indefinite"/><animateTransform attributeName="transform" type="translate" values="0 0;0 -40" dur="1.6s" begin="${1.1 + k*.35}s" repeatCount="indefinite"/></text>`;
+    } else { // scold
+      b = `${legsOf(320)}
+        <g transform="translate(276 30)"><g><animateTransform attributeName="transform" type="rotate" values="-14 0 20;14 0 20;-14 0 20" dur=".5s" repeatCount="indefinite"/><rect x="-5" y="-26" width="10" height="34" rx="5" fill="#8d5a3c"/><rect x="-10" y="4" width="22" height="22" rx="8" fill="#8d5a3c"/></g></g>
+        <g transform="translate(200 18)"><rect x="-58" y="-16" width="116" height="30" rx="14" fill="#fff" stroke="#3f3a4a" stroke-width="2.5"/><text x="0" y="5" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="16" fill="#c8312a">Bad dog!</text></g>
+        <g transform="translate(130 ${F}) scale(.75)"><g>${poppyFig({head: 30, tail: 62, lift: 12})}<animateTransform attributeName="transform" type="translate" values="0 0;-2 0;2 0;0 0" dur=".15s" repeatCount="indefinite"/></g></g>`;
+    }
+    return `<svg class="finScene fade" viewBox="0 0 ${W} 160" aria-hidden="true">${b}</svg>`;
+  }
 
   async function finale(){
     $('game').style.display = 'none';
@@ -1178,6 +1247,7 @@
     }[c];
     $('finTitle').textContent = 'Your turn';
     $('finBody').innerHTML = `
+      ${film(c, run.monkeyStage)}
       <p class="fade">${what}</p>
       <p class="fade">Now you are them. Poppy is in front of you. <b>What do you do?</b></p>
       <div class="choices fade">
@@ -1210,10 +1280,11 @@
     if (score > best){ isBest = best > -1e9; best = score; try { localStorage.setItem('pm-best', String(score)); } catch(e){} }
     $('finTitle').textContent = o === 'treat' ? 'A treat' : 'A scolding';
     $('finBody').innerHTML = `
-      ${repaired ? `<div class="hero fade"><svg class="mk" style="width:80px;height:96px;margin:0" viewBox="-40 -64 80 70">${monkeySVG(st, true)}</svg></div>` : ''}
+      ${film(o, st)}
       <div class="stamp ${R.ok ? 'ok' : 'no'}">${R.stamp}</div>
       <p class="fade">${R.text}</p>
       ${coda}
+      ${repaired ? `<div class="hero fade"><svg class="mk" style="width:80px;height:96px;margin:0" viewBox="-40 -64 80 70">${monkeySVG(st, true)}</svg></div>` : ''}
       <p class="moral fade">A treat or a no only means something for what she is doing right now.</p>
       <p class="sub">Joy minus guilt</p>
       <div class="bigscore">${score > 0 ? '+' : ''}${score}</div>
