@@ -138,7 +138,14 @@
   @keyframes fall{0%{transform:translateY(0) rotate(0);} 100%{transform:translateY(110vh) rotate(720deg);}}
 
   /* finale */
-  #scaleSvg{width:100%; max-width:360px; height:auto; display:block; margin:4px auto 0;}
+  .said{display:inline-block; position:relative; background:#fff; border:3px solid #3f3a4a; border-radius:18px; padding:8px 16px; font-family:'Fredoka',sans-serif; font-weight:700; font-size:20px; margin:8px 0 4px; animation:stampIn .45s cubic-bezier(.2,1.6,.4,1);}
+  .said:after{content:""; position:absolute; left:50%; bottom:-14px; margin-left:-8px; border:8px solid transparent; border-top-color:#3f3a4a;}
+  #heart{position:relative; width:170px; height:170px; margin:6px auto 0;}
+  #heart svg{position:absolute; inset:0; width:100%; height:100%; transition:opacity .18s ease, transform .25s ease;}
+  #bal{display:flex; width:100%; max-width:300px; height:14px; border-radius:8px; overflow:hidden; margin:8px auto 0; background:#eee4d4;}
+  #balJ{background:linear-gradient(90deg,#ffcf3f,#ff8a2e); transition:width .8s ease;}
+  #balG{background:linear-gradient(90deg,#9aa9cf,#6b7fa8); transition:width .8s ease;}
+  .moral{font-family:'Fredoka',sans-serif; font-weight:500; font-size:16px; margin:12px 0 2px;}
   .choices{display:flex; flex-direction:column; gap:8px; margin:12px 0 4px;}
   .choice{display:block; width:100%; text-align:left; background:#fff; border:2px solid #efe6d6; border-radius:16px; padding:11px 14px; cursor:pointer; font-family:'Nunito',sans-serif; font-size:14px; color:var(--muted); line-height:1.35;}
   .choice b{display:block; font-family:'Fredoka',sans-serif; font-weight:600; font-size:18px; color:var(--ink);}
@@ -183,6 +190,18 @@
       <path d="M31 36 Q36 31 43 34" fill="none" stroke="#8d5a24" stroke-width="2.4" stroke-linecap="round"/>
       <path d="M69 36 Q64 31 57 34" fill="none" stroke="#8d5a24" stroke-width="2.4" stroke-linecap="round"/>
       <path d="M44 79 Q50 75 56 79" fill="none" stroke="#1d1612" stroke-width="2.2" stroke-linecap="round"/>
+    </g>
+    <g id="poppyJoy">
+      <ellipse cx="20" cy="44" rx="13" ry="18" fill="#9c6128" transform="rotate(-8 20 44)"/>
+      <ellipse cx="80" cy="44" rx="13" ry="18" fill="#9c6128" transform="rotate(8 80 44)"/>
+      <ellipse cx="50" cy="52" rx="30" ry="32" fill="#c98a45"/>
+      <ellipse cx="50" cy="66" rx="17" ry="14" fill="#5a3b1e"/>
+      <ellipse cx="50" cy="59" rx="8" ry="6" fill="#1d1612"/>
+      <path d="M32 45 Q38 37 44 45" fill="none" stroke="#1d1612" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M56 45 Q62 37 68 45" fill="none" stroke="#1d1612" stroke-width="3.2" stroke-linecap="round"/>
+      <path d="M40 71 Q50 84 60 71 Z" fill="#1d1612"/>
+      <path d="M45 74 Q50 92 55 74 Z" fill="#ff7a9e"/>
+      <circle cx="30" cy="58" r="4" fill="#ff9e8a" opacity=".6"/><circle cx="70" cy="58" r="4" fill="#ff9e8a" opacity=".6"/>
     </g>
     <g id="poop">
       <ellipse cx="0" cy="1" rx="50" ry="8" fill="rgba(40,25,10,.25)"/>
@@ -238,7 +257,7 @@
       <li><b>Tap anywhere</b> in the room and Poppy runs there. Arrow keys work too.</li>
       <li><b>The big button</b> does the crime. Some crimes you hold (tugging, chewing). One you can't stop once it's started.</li>
       <li><b>They're out.</b> Nobody sees what she does. But they come home at a moment you don't know.</li>
-      <li><b>Listen.</b> A car, then the gate, then the key in the door. Not every car stops, and not every gate is theirs.</li>
+      <li><b>Listen.</b> A car, then the gate, then the key in the door. When you hear the car, it's them.</li>
       <li><b>When the door opens, be in your bed.</b> Asleep, of course. Tap <b>To bed</b> and she runs there.</li>
       <li>Once she's done what she came to do, she can curl up and <b>wait for them</b>.</li>
       <li>Every crime brings <b>joy</b>. And something else, which she'll find out about at the end.</li>
@@ -259,7 +278,12 @@
   <div class="stack"><div class="card" id="finCard">
     <p class="sub" id="finSub">The key turns in the door</p>
     <h2 id="finTitle">When they come home</h2>
-    <svg id="scaleSvg" viewBox="0 0 360 230" aria-label="Poppy's scale: joy against guilt"></svg>
+    <div id="saidWrap"></div>
+    <div id="heart" aria-label="Poppy, between joy and guilt">
+      <svg id="hJoy" viewBox="0 0 100 100"><use href="#poppyJoy"/></svg>
+      <svg id="hGuilt" viewBox="0 0 100 100" style="opacity:0"><use href="#poppyGuilty"/></svg>
+    </div>
+    <div id="bal"><div id="balJ" style="width:50%"></div><div id="balG" style="width:50%"></div></div>
     <div class="tally"><span class="j" id="finJoy">Joy 0</span><span class="g" id="finGuilt">Guilt 0</span></div>
     <div id="finBody"></div>
   </div>
@@ -314,21 +338,21 @@
   const CLIMB = [360, 600], ON_SOFA = [370, 592], JUMP_OK = [500, 592];
 
   const ROUNDS = [
-    {key:'rug', name:'The rug', n:1, arrive:[58,76], falses:2,
+    {key:'rug', name:'The rug', n:1, arrive:[58,76], falses:0,
      goal:'Do it on the rug. The bigger, the better.',
      intro:'They\'ve gone out. Poppy is alone, and she needs to go. The garden door is shut. And there is the rug.',
      how:'Tap <b>Poop</b> and she does it on the rug (if she isn\'t on it yet, she runs there). The longer she waits, the <b>bigger</b> it gets, but a big one takes longer, and they could come home any minute. Right on the <b>medallion</b> in the middle is best. Or first tap <b>Garden</b> and she scratches at the garden door. Nobody will come. But it counts for something later.'},
-    {key:'lota', name:'The LOTA', n:2, arrive:[52,72], falses:2,
+    {key:'lota', name:'The LOTA', n:2, arrive:[52,72], falses:0,
      goal:'Shred at least 3 of the 5 cushions. Be in bed when they come home.',
      intro:'Next day. The rug is clean again. They\'ve gone out. The sofa is an Eileen Gray LOTA, everyone says so, and it has five cushions.',
      how:'Stand in front of the sofa and <b>hold</b> the button to tug. Three cushions is enough. All five gives extra joy.'},
-    {key:'monkey', name:'The monkey', n:3, arrive:[60,80], falses:3,
+    {key:'monkey', name:'The monkey', n:3, arrive:[60,80], falses:0,
      goal:'Get the monkey off the shelf and chew. Be in bed when they come home.',
      intro:'The day after. New cushions are on order. They\'ve gone out again. On the shelf above the sofa sits the little green knitted monkey. He has been in this family longer than anyone.',
      how:'Climb onto the sofa, move under the shelf and <b>jump</b> when the marker is in the green. Then <b>hold</b> to chew. In her bed she can lie on him, so nobody sees him.'}
   ];
   const STAGES = {
-    real: [['car', 1.5], ['gate', 1.3], ['key', 1.25], ['open', 0]],
+    real: [['car', 2], ['gate', 1.6], ['key', 1.4], ['open', 0]],
     past: [['car', 1.5], ['past', 1.4]],
     next: [['car', 1.5], ['gate', 1.3], ['next', 1.4]]
   };
@@ -846,6 +870,7 @@
           SFX.tear(); spawnPuffs(c.x + c.w / 2, 7, 360); drawEvidence();
           const left = run.cushions.filter(q => q.hp > 0).length;
           addJoy(40, left === 0 ? 'SNOW!' : 'rrrrip!');
+          if (left === 0){ g.endAt = tt + 2.4; showAlarm(null); g.alarm = null; }
           if (left === 0) setTimeout(() => { if (g && g.R.key === 'lota' && !g.over){ g.joy += 40; run.joy.lota += 40; updateJoy(); floatText('+40 ♥', g.p.x, g.p.y - 150, '#ff8a2e'); say('all five!', 1.4); SFX.joy(); } }, 650);
         }
       } else if (p.mode === 'tug') p.mode = 'idle';
@@ -860,6 +885,11 @@
           spawnPuffs(p.x + p.dir * 50, run.monkeyStage === 3 ? 6 : 2, p.onSofa ? 330 : GY - 6); drawEvidence(); SFX.tear();
           const lines = ['', 'an ear!', 'an arm…', 'his stuffing!', 'his eye.'];
           addJoy(40, lines[run.monkeyStage]);
+          if (run.monkeyStage >= 4){
+            actHeld = false; showAlarm(null); g.alarm = null;
+            if (p.onSofa) hopDown();
+            p.tx = BED_X; p.mode = 'walk'; p.speed = 300; g.endAt = tt + 3.2;
+          }
         }
       } else if (p.mode === 'chew') p.mode = 'idle';
       else if (p.mode === 'bedchew') p.mode = 'bed';
@@ -993,7 +1023,7 @@
     showAlarm('🚪 The door opens', 'hot');
     if (!goalDone()) tooGood();
     else if (g.p.mode !== 'bed') caught();
-    else roundWon();
+    else { g.byDoor = true; roundWon(); }
   }
   function caught(){
     g.over = true; g.caughtFlag = true; SFX.caught();
@@ -1035,14 +1065,14 @@
     const k = g.R.key;
     const body = {
       rug: `<b>${run.best}.</b> It's enormous. It steams a little. It will be there when they come home.${run.scratched ? ' (She did scratch at the garden door first. Nobody came.)' : ''}`,
-      lota: `${run.cushions.filter(c => c.hp <= 0).length} of 5 cushions shredded. The living room looks like it snowed. When the door opened she was asleep in her bed. Of course.`,
-      monkey: `The little green monkey: <b>${['whole','missing an ear','missing an ear and an arm','missing an ear, an arm and most of his stuffing','missing an ear, an arm, his stuffing and one eye'][run.monkeyStage]}</b>. He is in her bed, under her. She is asleep. Of course.`
+      lota: g.byDoor ? `${run.cushions.filter(c => c.hp <= 0).length} of 5 cushions shredded. The living room looks like it snowed. When the door opened she was asleep in her bed. Of course.` : `<b>All five cushions.</b> Total destruction. The living room looks like it snowed, and there is nothing left to tug.`,
+      monkey: `The little green monkey: <b>${['whole','missing an ear','missing an ear and an arm','missing an ear, an arm and most of his stuffing','missing an ear, an arm, his stuffing and one eye'][run.monkeyStage]}</b>. ${g.byDoor ? 'He is in her bed, under her. When the door opened she was asleep. Of course.' : 'There is nothing left to chew. She carries what remains of him to her bed and lies down on it.'}`
     }[k];
     const isLast = run.round === 2;
     setTimeout(() => showMsg(`
       <div class="hero"><svg class="face" viewBox="0 0 100 100"><use href="#poppyFace"/></svg>${k === 'monkey' ? `<svg class="mk" viewBox="-40 -64 80 70">${monkeySVG(run.monkeyStage)}</svg>` : ''}</div>
       <p class="sub">Round ${g.R.n} · ${g.R.name}</p>
-      <div class="stamp ok">${k === 'rug' ? 'ON THE RUG' : 'ASLEEP'}</div>
+      <div class="stamp ok">${k === 'rug' ? 'ON THE RUG' : g.byDoor ? 'ASLEEP' : 'TOTAL'}</div>
       <p>${body}</p>
       <div class="tally"><span class="j">+${run.joy[k]} joy</span></div>
       <button class="btn" id="mBtn">${isLast ? 'That evening' : 'Next: ' + ROUNDS[run.round + 1].name}</button>`,
@@ -1065,7 +1095,7 @@
       <p>${R.intro}</p>
       <p><b>👆 Tap anywhere in the room and Poppy runs there.</b></p>
       <p class="small">${R.how}</p>
-      <p class="small">They come home at a moment you don't know. <b>A car, the gate, the key.</b> Not every car stops. When the door opens, be in your bed.</p>
+      <p class="small">They come home at a moment you don't know. <b>A car, the gate, the key.</b> When you hear the car, run. When the door opens, be in your bed.</p>
       <button class="btn" id="mBtn">Go</button>`, () => { paused = false; last = performance.now(); });
   }
 
@@ -1079,135 +1109,117 @@
     }
   }
 
-  // ---------- finale: the scale ----------
+  // ---------- finale: joy against guilt ----------
   function crimes(){
-    const list = [];
-    list.push({icon:'poop', label:'the rug', joy: run.joy.rug, guilt: Math.round((20 + 10 * run.poops.length) * (run.scratched ? .5 : 1))});
     const nC = run.cushions.filter(c => c.hp <= 0).length;
-    list.push({icon:'cushion', label:'the LOTA', joy: run.joy.lota, guilt: 25 * nC, n: nC});
-    list.push({icon:'monkey', label:'the monkey', joy: run.joy.monkey, guilt: 30 + 60 * run.monkeyStage});
-    return list;
+    return [
+      {label:'the rug', joy: run.joy.rug, guilt: Math.round((20 + 10 * run.poops.length) * (run.scratched ? .5 : 1))},
+      {label:'the LOTA', joy: run.joy.lota, guilt: 25 * nC},
+      {label:'the monkey', joy: run.joy.monkey, guilt: 30 + 60 * run.monkeyStage}
+    ];
   }
-  function iconSVG(kind, stage){
-    if (kind === 'poop') return `<use href="#poop" transform="scale(.3)"/>`;
-    if (kind === 'cushion') return `<use href="#cushionIcon" transform="translate(0 -14) scale(.62)"/>`;
-    return `<g transform="scale(.55)">${monkeySVG(stage)}</g>`;
-  }
-  function drawScale(J, G, items, angleOverride){
-    const a = angleOverride != null ? angleOverride : clamp((G - J) / 9, -16, 16);
-    const rad = a * Math.PI / 180, cx = 180, cy = 50, L = 118;
-    const lx = cx - L * Math.cos(rad), ly = cy - L * Math.sin(rad), rx = cx + L * Math.cos(rad), ry = cy + L * Math.sin(rad);
-    const pan = (x, y, col, stuff, word) => `
-      <path d="M${x} ${y} L${x-46} ${y+78} M${x} ${y} L${x+46} ${y+78}" stroke="#b9ae9b" stroke-width="2"/>
-      <g transform="translate(${x} ${y+78})">${stuff}</g>
-      <path d="M${x-56} ${y+78} Q ${x} ${y+104} ${x+56} ${y+78} Z" fill="${col}" stroke="#3f3a4a" stroke-width="3" stroke-linejoin="round"/>
-      <text x="${x}" y="${y+124}" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="600" font-size="15" fill="${col === '#ffb36b' ? '#d0631a' : '#4d5f88'}">${word}</text>`;
-    let joyStuff = '', guiltStuff = '';
-    items.forEach((it, i) => {
-      const dx = (i - (items.length - 1) / 2) * 32;
-      if (it.joy > 0) joyStuff += `<g transform="translate(${dx} -4)"><g class="fade">${iconSVG(it.icon, it.stage)}</g></g>`;
-      if (it.guilt > 0){
-        const w = 10 + Math.min(26, it.guilt / 7);
-        guiltStuff += `<g transform="translate(${dx} 0)"><g class="fade"><path d="M${-w/2} 0 L${-w/2+5} ${-w*.9} L${w/2-5} ${-w*.9} L${w/2} 0 Z" fill="#6b7fa8" stroke="#3f4d6e" stroke-width="2"/><circle cx="0" cy="${-w*.9-4}" r="4" fill="none" stroke="#3f4d6e" stroke-width="2.5"/><text x="0" y="${-w*.35}" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="${Math.max(8, w*.38)}" fill="#fff">${it.guilt}</text></g></g>`;
-      }
-    });
-    $('scaleSvg').innerHTML = `
-      <rect x="168" y="50" width="24" height="160" rx="6" fill="#c9a27a"/>
-      <path d="M130 214 h100" stroke="#8b5a2b" stroke-width="10" stroke-linecap="round"/>
-      <g style="transition:transform 1s">
-        ${pan(lx, ly, '#ffb36b', joyStuff, 'JOY')}
-        ${pan(rx, ry, '#9aa9cf', guiltStuff, 'GUILT')}
-        <path d="M${lx} ${ly} L${rx} ${ry}" stroke="#8b5a2b" stroke-width="9" stroke-linecap="round"/>
-      </g>
-      <circle cx="${cx}" cy="${cy}" r="9" fill="#ff7a59" stroke="#3f3a4a" stroke-width="3"/>
-      <path d="M${cx} ${cy-12} L${cx-7} ${cy-30} L${cx+7} ${cy-30} Z" fill="#3f3a4a" transform="rotate(${a} ${cx} ${cy})"/>`;
+  // Poppy's face veers between joy and guilt; the time she spends on each follows the weights
+  const fin = {J: 0, G: 0, on: false};
+  function setWeights(J, G){
+    fin.J = J; fin.G = G;
+    const tot = Math.max(1, J + G);
+    $('balJ').style.width = (J / tot * 100).toFixed(1) + '%'; $('balG').style.width = (G / tot * 100).toFixed(1) + '%';
     $('finJoy').textContent = `Joy ${Math.round(J)}`; $('finGuilt').textContent = `Guilt ${Math.round(G)}`;
   }
-  function animateScale(from, to, items, ms, done){
-    const t0 = performance.now();
-    function step(now){
-      const k = clamp((now - t0) / ms, 0, 1), e = 1 - Math.pow(1 - k, 3);
-      drawScale(from.J + (to.J - from.J) * e, from.G + (to.G - from.G) * e, items);
-      if (k < 1) requestAnimationFrame(step); else if (done) done();
-    }
-    requestAnimationFrame(step);
+  function heartLoop(now){
+    if (!fin.on) return;
+    requestAnimationFrame(heartLoop);
+    const tot = fin.J + fin.G, js = tot ? fin.J / tot : .5;
+    const u = (now / 1400) % 1, joy = u < js;
+    const wob = Math.sin(now / 90) * 3;
+    $('hJoy').style.opacity = joy ? 1 : 0; $('hGuilt').style.opacity = joy ? 0 : 1;
+    $('hJoy').style.transform = `rotate(${(-6 + wob).toFixed(1)}deg) translateY(-4px)`;
+    $('hGuilt').style.transform = `rotate(${(5 - wob/2).toFixed(1)}deg) translateY(6px) scale(.96)`;
   }
+  const wait = ms => new Promise(r => setTimeout(r, ms));
 
-  function finale(){
+  async function finale(){
     $('game').style.display = 'none';
-    const fin = $('finale'); fin.style.display = 'flex'; fin.scrollTop = 0;
-    const cs = crimes(); cs[2].stage = run.monkeyStage;
+    const f = $('finale'); f.style.display = 'flex'; f.scrollTop = 0;
     $('finSub').textContent = 'That evening';
-    $('finTitle').textContent = 'When they come home';
-    $('finBody').innerHTML = `<p class="fade">The rug. The sofa. And now the empty shelf. They look at Poppy, and Poppy weighs it all.</p>${run.scratched ? '<p class="small fade">She did scratch at the garden door, that first day. Nobody came. It weighs a little less.</p>' : ''}`;
-    drawScale(0, 0, []);
-    // the crimes go on the scale one by one
-    let J = 0, G = 0, shown = [];
-    const steps = cs.map(c => () => new Promise(res => {
-      shown = [...shown, c];
-      const from = {J, G}; J += c.joy; G += c.guilt;
-      animateScale(from, {J, G}, shown, 900, () => setTimeout(res, 450));
-      SFX.plop();
-    }));
-    let pr = new Promise(r => setTimeout(r, 900));
-    steps.forEach(s => pr = pr.then(s));
-    pr.then(() => offerChoice(cs, J, G));
-  }
-
-  function offerChoice(cs, J, G){
+    $('finTitle').textContent = 'The door opens';
+    $('saidWrap').innerHTML = ''; $('finBody').innerHTML = '';
+    setWeights(0, 0); fin.on = true; requestAnimationFrame(heartLoop);
+    SFX.key(); await wait(700); SFX.gate();
+    await wait(600);
+    $('saidWrap').innerHTML = `<div class="said">Poppy, what did you do?!</div>`; SFX.caught();
+    await wait(1100);
+    $('finBody').innerHTML = `<p class="fade">The rug. The sofa. The empty shelf. Poppy looks at them, and weighs it all.</p>${run.scratched ? '<p class="small fade">She did scratch at the garden door, that first day. Nobody came. It weighs a little less.</p>' : ''}`;
+    const cs = crimes(); let J = 0, G = 0;
+    for (const c of cs){ await wait(1100); J += c.joy; G += c.guilt; setWeights(J, G); SFX.plop(); }
+    await wait(1200);
     const st = run.monkeyStage;
-    const heavy = G > J;
-    $('finBody').innerHTML = `
-      <p class="fade">${heavy ? 'Poppy\'s heart is full. And heavier than it is full.' : 'Poppy\'s heart is full. But something sits on the other side of it.'} The monkey is in her bed, under her, ${['still whole','missing an ear','missing an ear and an arm','leaking stuffing','looking at her with one eye'][st]}.</p>
-      <p class="fade"><b>What does she do?</b></p>
+    $('finBody').innerHTML += `
+      <p class="fade">The monkey is in her bed, under her, ${['still whole','missing an ear','missing an ear and an arm','leaking stuffing','looking at her with one eye'][st]}.</p>
+      <p class="fade"><b>What does Poppy do?</b></p>
       <div class="choices fade">
         <button class="choice" data-c="back"><b>Bring him back</b>Carry the monkey over and lay him at their feet.</button>
         <button class="choice" data-c="hide"><b>Stay on him</b>Lie still. Maybe nobody will look under a sleeping dog.</button>
         <button class="choice" data-c="chew"><b>Keep chewing</b>Pull him out. He's hers now.</button>
       </div>`;
-    document.querySelectorAll('.choice').forEach(b => b.onclick = () => resolve(cs, J, G, b.dataset.c));
+    document.querySelectorAll('.choice').forEach(b => b.onclick = () => poppyChooses(cs, b.dataset.c));
   }
 
-  function resolve(cs, J, G, choice){
-    const m = cs[2], baseMG = m.guilt, st = run.monkeyStage;
-    let J2 = J, G2 = G, title, text, face = 'poppyGuilty', monkeyArt, stamp;
-    if (choice === 'back'){
-      const newMG = Math.round(baseMG * .25); G2 = G - baseMG + newMG; m.guilt = newMG;
-      title = 'She brings him back';
-      text = `She gets up, picks him out of her bed, walks over slowly, ears flat, tail low, and puts the monkey down at their feet. Then she sits and doesn't look at anyone.</p>
-        <p>That evening someone sits under the lamp with a needle and green wool. The monkey comes back a little crooked, ${st >= 4 ? 'with one red button eye, ' : ''}and goes back up on the shelf.</p>
-        <p>Poppy sleeps underneath it all night.`;
-      monkeyArt = monkeySVG(st, true); face = 'poppyFace'; stamp = 'FORGIVEN';
-    } else if (choice === 'hide'){
-      title = 'She stays on him';
-      text = `She lies very still. They look everywhere: behind the sofa, under the shelf, out in the garden. Nobody looks under a sleeping dog.</p>
-        <p>She doesn't sleep much that night.`;
-      monkeyArt = null; stamp = 'HEAVY';
-    } else {
-      const newMG = Math.round(baseMG * 1.5); G2 = G - baseMG + newMG; m.guilt = newMG; J2 = J + 40; run.joy.monkey += 40; m.joy += 40;
-      title = 'She keeps chewing';
-      text = `She chews, right there, while they watch. It tastes of the whole family. For a minute it's wonderful.</p>
-        <p>Then it isn't.`;
-      monkeyArt = monkeySVG(4); stamp = 'TOO MUCH';
-    }
-    const score = Math.round(J2 - G2);
-    animateScale({J, G}, {J: J2, G: G2}, cs, 1200);
+  function poppyChooses(cs, c){
+    const m = cs[2];
+    if (c === 'back') m.guilt = Math.round(m.guilt * .25);
+    if (c === 'chew'){ m.guilt = Math.round(m.guilt * 1.5); m.joy += 40; }
+    const J = cs.reduce((a, x) => a + x.joy, 0), G = cs.reduce((a, x) => a + x.guilt, 0);
+    setWeights(J, G);
+    const what = {
+      back: 'She gets up, picks him out of her bed, walks over slowly, ears flat, tail low, and lays him at their feet. Then she sits and looks at the floor.',
+      hide: 'She lies very still on top of him. Nobody looks under a sleeping dog. Not yet.',
+      chew: 'She pulls him out and chews, right there, while they watch.'
+    }[c];
+    $('finTitle').textContent = 'Your turn';
+    $('finBody').innerHTML = `
+      <p class="fade">${what}</p>
+      <p class="fade">Now you are them. Poppy is in front of you. <b>What do you do?</b></p>
+      <div class="choices fade">
+        <button class="choice" data-o="treat"><b>Treat</b>Give her a treat.</button>
+        <button class="choice" data-o="scold"><b>Scold</b>"Bad dog."</button>
+      </div>`;
+    document.querySelectorAll('.choice').forEach(b => b.onclick = () => ending(cs, c, b.dataset.o));
+  }
+
+  function ending(cs, c, o){
+    let J = cs.reduce((a, x) => a + x.joy, 0), G = cs.reduce((a, x) => a + x.guilt, 0);
+    const st = run.monkeyStage;
+    const R = {
+      'back,treat': {dJ: 40, dG: -20, stamp:'RIGHT', ok:true, text:'A treat, for bringing him back. That is the bit she will remember: bring it back, get a treat. The rest of the day is far too long ago for her to connect to anything.'},
+      'back,scold': {dJ: 0, dG: 60, stamp:'OUCH', ok:false, text:'She brought him back and got scolded for it. What she learns: don\'t bring things back. Next time she keeps the sock.'},
+      'hide,treat': {dJ: 20, dG: 0, stamp:'HMM', ok:false, text:'A treat for lying in her bed. She takes it without getting up. Now the monkey is a secret with a treat on top. They find him in the morning.'},
+      'hide,scold': {dJ: 0, dG: 60, stamp:'HEAVY', ok:false, text:'Scolded for lying in her bed. She has no idea which of the hundred things it was for. All of them, she decides. They find the monkey in the morning.'},
+      'chew,treat': {dJ: 40, dG: 40, stamp:'WRONG', ok:false, text:'A treat for chewing the monkey, right in front of you. She chews harder.'},
+      'chew,scold': {dJ: 0, dG: 20, stamp:'FAIR', ok:true, text:'A sharp "No!", right in the act. The one moment a no means something. She drops him.'}
+    }[c + ',' + o];
+    J += R.dJ; G = Math.max(0, G + R.dG); setWeights(J, G);
+    if (R.ok) { SFX.win(); confetti(45); } else SFX.caught();
+    const repaired = c === 'back' || c === 'chew';
+    const coda = repaired
+      ? `<p class="fade">That night someone sits under the lamp with a needle and green wool. The monkey comes back a little crooked${st >= 4 ? ', with one red button eye' : ''}, and goes back up on the shelf. Poppy sleeps underneath.</p>`
+      : '';
+    const score = Math.round(J - G);
     let best = -1e9, isBest = false;
     try { const b = localStorage.getItem('pm-best'); if (b !== null) best = +b; } catch(e){}
     if (score > best){ isBest = best > -1e9; best = score; try { localStorage.setItem('pm-best', String(score)); } catch(e){} }
-    $('finSub').textContent = 'When they come home';
-    $('finTitle').textContent = title;
+    $('finTitle').textContent = o === 'treat' ? 'A treat' : 'A scolding';
     $('finBody').innerHTML = `
-      <div class="hero fade"><svg class="face" viewBox="0 0 100 100"><use href="#${face}"/></svg>${monkeyArt ? `<svg class="mk" viewBox="-40 -64 80 70">${monkeyArt}</svg>` : ''}</div>
-      <div class="stamp ${choice === 'back' ? 'ok' : 'no'}">${stamp}</div>
-      <p class="fade">${text}</p>
+      ${repaired ? `<div class="hero fade"><svg class="mk" style="width:80px;height:96px;margin:0" viewBox="-40 -64 80 70">${monkeySVG(st, true)}</svg></div>` : ''}
+      <div class="stamp ${R.ok ? 'ok' : 'no'}">${R.stamp}</div>
+      <p class="fade">${R.text}</p>
+      ${coda}
+      <p class="moral fade">A treat or a no only means something for what she is doing right now.</p>
       <p class="sub">Joy minus guilt</p>
       <div class="bigscore">${score > 0 ? '+' : ''}${score}</div>
       <p class="best ${isBest ? 'new' : ''}">${isBest ? 'New best' : 'Best: ' + (best > 0 ? '+' : '') + best}</p>
-      <p class="small fade">A good dog isn't one who never misbehaves.</p>
       <button class="btn" id="againBtn">Be bad again</button>`;
-    if (choice === 'back') { SFX.win(); confetti(50); } else SFX.caught();
-    $('againBtn').onclick = () => { $('finale').style.display = 'none'; newRun(); g = null; showIntro(); };
+    $('againBtn').onclick = () => { fin.on = false; $('finale').style.display = 'none'; newRun(); g = null; showIntro(); };
     showLandBest();
   }
 
