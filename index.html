@@ -1,1 +1,1191 @@
-dummy
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Poppy Misbehaves</title>
+<meta name="description" content="You are Poppy, a Ridgeback puppy, alone in the living room. The rug, the sofa, the little green monkey. Don't get caught. And when they come home, weigh what you've done.">
+<script data-goatcounter="https://steffenhuck.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;500;600;700&family=Nunito:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#3f3a4a;
+    --muted:#7d7690;
+    --paper:#fffdf7;
+    --accent:#ff7a59;
+    --good:#4fae57;
+    --bad:#e2483a;
+    --joy:#ff8a2e;
+    --guilt:#6b7fa8;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    min-height:100vh; min-height:100dvh;
+    font-family:'Nunito',sans-serif; color:var(--ink);
+    background:linear-gradient(170deg,#e7f6ff 0%,#fff6e4 55%,#eefbe6 100%);
+    display:flex; flex-direction:column; align-items:center;
+    overflow-x:hidden; user-select:none; -webkit-user-select:none;
+  }
+  h1,h2,.btn,.chip,.fred{font-family:'Fredoka',sans-serif;}
+  button{font-family:inherit;}
+
+  .overlay{
+    position:fixed; inset:0; z-index:50;
+    display:flex; flex-direction:column; align-items:center; justify-content:flex-start;
+    background:rgba(255,250,240,.9); backdrop-filter:blur(6px); -webkit-backdrop-filter:blur(6px);
+    padding:16px; overflow-y:auto;
+  }
+  .stack{margin:auto 0; width:100%; display:flex; flex-direction:column; align-items:center;}
+  .card{
+    background:var(--paper); border-radius:26px; box-shadow:0 18px 50px rgba(100,80,60,.18);
+    padding:24px 22px 22px; max-width:440px; width:100%; text-align:center;
+  }
+  .card h1{margin:4px 0 2px; font-size:38px; font-weight:700; line-height:1.05;}
+  .card h2{margin:4px 0 2px; font-size:28px; font-weight:600; line-height:1.15;}
+  .card p{font-size:16px; line-height:1.5; margin:10px 0;}
+  .card p.small{font-size:14px; color:var(--muted); margin:6px 0;}
+  .hero{display:flex; align-items:flex-end; justify-content:center; margin:0 auto 2px;}
+  .hero svg.face{width:126px; height:126px;}
+  .hero svg.mk{width:64px; height:80px; margin-left:-8px; margin-bottom:6px;}
+  .btn{
+    font-size:20px; font-weight:600; color:#fff;
+    background:linear-gradient(135deg,#ffa23f,#ff6b4a); border:none; border-radius:999px;
+    padding:13px 34px; cursor:pointer; box-shadow:0 8px 20px rgba(255,120,70,.35);
+    transition:transform .15s ease; margin:6px 4px 0;
+  }
+  .btn:active{transform:scale(.95);}
+  .btn.secondary{background:#fff; color:var(--ink); box-shadow:0 4px 12px rgba(100,80,60,.14); border:2px solid #eee4d4; font-size:17px; padding:10px 22px;}
+  .btn.small{font-size:15px; padding:8px 16px;}
+
+  .levels{display:flex; flex-direction:column; gap:10px; margin:14px 0 6px;}
+  .lvl{display:flex; align-items:center; gap:14px; text-align:left; background:#fff; border:2px solid #efe6d6; border-radius:18px; padding:12px 14px;}
+  .lvl .badge{width:50px; height:50px; border-radius:16px; flex:0 0 50px; display:flex; align-items:center; justify-content:center; font-family:'Fredoka',sans-serif; font-weight:700; font-size:22px; color:#fff;}
+  .lvl.r1 .badge{background:linear-gradient(135deg,#8ad46a,#4fae57);}
+  .lvl.r2 .badge{background:linear-gradient(135deg,#ffc24f,#ff8f3b);}
+  .lvl.r3 .badge{background:linear-gradient(135deg,#ff6f6f,#c23a6a);}
+  .lvl.r4 .badge{background:linear-gradient(135deg,#9aa9cf,#6b7fa8);}
+  .lvl .name{font-family:'Fredoka',sans-serif; font-size:19px; font-weight:600; display:block; line-height:1.1;}
+  .lvl .what{font-size:13.5px; color:var(--muted); display:block; margin-top:3px; line-height:1.35;}
+
+  .stamp{display:inline-block; margin:6px 0 4px; padding:6px 14px 7px; border:5px solid; border-radius:12px; font-family:'Fredoka',sans-serif; font-weight:700; font-size:clamp(20px,6vw,28px); letter-spacing:.03em; transform:rotate(-5deg); animation:stampIn .5s cubic-bezier(.2,1.6,.4,1);}
+  .stamp.ok{color:#2f8a3a; border-color:#2f8a3a; background:rgba(105,219,124,.12);}
+  .stamp.no{color:#c8312a; border-color:#c8312a; background:rgba(255,107,90,.08);}
+  @keyframes stampIn{0%{transform:scale(2.4) rotate(-12deg); opacity:0;} 100%{transform:scale(1) rotate(-5deg); opacity:1;}}
+  .bigscore{font-family:'Fredoka',sans-serif; font-weight:700; font-size:50px; line-height:1; margin:10px 0 0; color:var(--accent);}
+  .bigscore small{font-size:17px; color:var(--muted); font-weight:600; margin-left:4px;}
+  .best{font-family:'Fredoka',sans-serif; font-weight:600; font-size:15px; color:var(--muted); margin:4px 0 2px;}
+  .best.new{color:#2f8a3a;}
+  .sub{font-size:13px; color:var(--muted); margin:10px 0 0; font-family:'Fredoka',sans-serif; font-weight:600; letter-spacing:.04em; text-transform:uppercase;}
+  .dedication{font-family:'Fredoka',sans-serif; font-weight:500; font-size:19px; margin:20px 0 0;}
+  .dedication b{color:var(--accent); font-weight:600;}
+  .rules{text-align:left; font-size:15px; line-height:1.5; margin:12px 0 0; padding-left:0; list-style:none;}
+  .rules li{margin:7px 0; padding-left:28px; position:relative;}
+  .rules li:before{content:"🐾"; position:absolute; left:0; top:0;}
+  .tally{display:flex; justify-content:center; gap:10px; margin:10px 0 2px; flex-wrap:wrap;}
+  .tally span{border-radius:12px; padding:6px 12px; font-family:'Fredoka',sans-serif; font-weight:600; font-size:16px;}
+  .tally .j{background:rgba(255,138,46,.14); color:#d0631a;}
+  .tally .g{background:rgba(107,127,168,.16); color:#4d5f88;}
+
+  /* ---------- game ---------- */
+  #game{display:none; flex-direction:column; align-items:center; width:100%; max-width:620px; padding:10px 12px 6px;}
+  #top{width:100%; display:flex; justify-content:space-between; align-items:center; padding:2px 4px 6px; gap:8px;}
+  #top .title{font-family:'Fredoka',sans-serif; font-size:19px; font-weight:600; line-height:1;}
+  #top .title small{display:block; font-family:'Nunito',sans-serif; font-weight:600; font-size:11px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; margin-top:3px;}
+  .chip{background:#fff; border-radius:999px; padding:5px 12px; font-size:16px; font-weight:600; box-shadow:0 3px 10px rgba(100,80,60,.12); display:flex; align-items:center; gap:6px; white-space:nowrap;}
+  .chip.low{color:#c8312a;}
+  #status{width:100%; display:flex; align-items:center; gap:8px; padding:0 4px 8px; flex-wrap:wrap;}
+  #goalTxt{font-family:'Fredoka',sans-serif; font-size:14px; font-weight:600; flex:1; min-width:150px;}
+  #joyChip{color:#d0631a;}
+  #warnTag{font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; color:#fff; background:#c8312a; padding:4px 10px; border-radius:999px; white-space:nowrap; animation:throb .5s ease-in-out infinite alternate;}
+  @keyframes throb{from{transform:scale(1);} to{transform:scale(1.07);}}
+  #sceneWrap{position:relative; width:100%; border-radius:22px; overflow:hidden; box-shadow:0 10px 30px rgba(100,80,60,.18); background:#f6e7cf; touch-action:manipulation;}
+  #scene{display:block; width:100%; height:auto; cursor:pointer;}
+  #sceneWrap.shake{animation:shake .4s ease;}
+  @keyframes shake{0%,100%{transform:translateX(0);} 25%{transform:translateX(-8px);} 75%{transform:translateX(8px);}}
+  #meterWrap{width:100%; display:flex; align-items:center; gap:8px; padding:8px 4px 0; min-height:30px;}
+  #meterLab{font-family:'Fredoka',sans-serif; font-weight:600; font-size:13.5px; white-space:nowrap; min-width:100px;}
+  #meter{flex:1; height:12px; border-radius:8px; background:#eee4d4; overflow:hidden;}
+  #meterFill{height:100%; width:0; background:linear-gradient(90deg,#ffcf3f,#ff8a2e); border-radius:8px; transition:width .1s linear;}
+  #controls{width:100%; display:grid; grid-template-columns:1fr 2fr; gap:10px; margin-top:10px;}
+  .ctl{
+    border:none; border-radius:20px; padding:12px 6px; cursor:pointer; font-family:'Fredoka',sans-serif; font-weight:600; font-size:18px;
+    background:#fff; color:var(--ink); box-shadow:0 6px 0 #e3d8c6, 0 10px 20px rgba(100,80,60,.12); display:flex; flex-direction:column; align-items:center; gap:2px;
+    touch-action:none;
+  }
+  .ctl small{font-family:'Nunito',sans-serif; font-weight:600; font-size:11px; color:var(--muted);}
+  .ctl:active{transform:translateY(3px); box-shadow:0 3px 0 #e3d8c6;}
+  #actBtn{background:linear-gradient(135deg,#ffa23f,#ff6b4a); color:#fff; box-shadow:0 6px 0 #d65a35, 0 10px 24px rgba(255,120,70,.35); font-size:22px;}
+  #actBtn small{color:rgba(255,255,255,.88);}
+  #actBtn.off{background:#ece4d6; color:#a79f8f; box-shadow:0 6px 0 #d8cdb9;}
+  #actBtn.off small{color:#a79f8f;}
+  #actBtn.hot{animation:throb .45s ease-in-out infinite alternate;}
+  #actBtn.held{transform:translateY(3px); box-shadow:0 3px 0 #d65a35;}
+  #controls2{width:100%; display:flex; justify-content:center; gap:8px; margin:14px 0 4px; flex-wrap:wrap;}
+
+  .confetti{position:fixed; top:-12px; z-index:60; width:10px; height:16px; border-radius:2px; pointer-events:none; animation:fall linear forwards;}
+  @keyframes fall{0%{transform:translateY(0) rotate(0);} 100%{transform:translateY(110vh) rotate(720deg);}}
+
+  /* finale */
+  #scaleSvg{width:100%; max-width:360px; height:auto; display:block; margin:4px auto 0;}
+  .choices{display:flex; flex-direction:column; gap:8px; margin:12px 0 4px;}
+  .choice{display:block; width:100%; text-align:left; background:#fff; border:2px solid #efe6d6; border-radius:16px; padding:11px 14px; cursor:pointer; font-family:'Nunito',sans-serif; font-size:14px; color:var(--muted); line-height:1.35;}
+  .choice b{display:block; font-family:'Fredoka',sans-serif; font-weight:600; font-size:18px; color:var(--ink);}
+  .choice:hover,.choice:focus-visible{border-color:var(--accent); background:#fff8f2; outline:none;}
+  .fade{animation:fadeIn .7s ease both;}
+  @keyframes fadeIn{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+
+  @media (prefers-reduced-motion: reduce){
+    .confetti{animation-duration:.01s;}
+    #sceneWrap.shake{animation:none;}
+  }
+  footer{padding:18px 0 22px; font-size:14px;}
+  footer a{color:var(--ink); font-style:italic; text-decoration:none; opacity:.6;}
+  footer a:hover{opacity:1;}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <g id="poppyFace">
+      <ellipse cx="22" cy="52" rx="13" ry="18" fill="#9c6128" transform="rotate(14 22 52)"/>
+      <ellipse cx="78" cy="52" rx="13" ry="18" fill="#9c6128" transform="rotate(-14 78 52)"/>
+      <ellipse cx="50" cy="52" rx="30" ry="32" fill="#c98a45"/>
+      <ellipse cx="50" cy="66" rx="17" ry="14" fill="#5a3b1e"/>
+      <ellipse cx="50" cy="60" rx="8" ry="6" fill="#1d1612"/>
+      <ellipse cx="47.5" cy="58.5" rx="2" ry="1.2" fill="#fff" opacity=".6"/>
+      <circle cx="38" cy="44" r="4" fill="#1d1612"/><circle cx="62" cy="44" r="4" fill="#1d1612"/>
+      <circle cx="39.5" cy="42.8" r="1.3" fill="#fff"/><circle cx="63.5" cy="42.8" r="1.3" fill="#fff"/>
+      <path d="M42 75 Q50 81 58 75" fill="none" stroke="#1d1612" stroke-width="2.2" stroke-linecap="round"/>
+    </g>
+    <!-- guilty face: ears flat, eyes looking up, brows raised in the middle -->
+    <g id="poppyGuilty">
+      <ellipse cx="20" cy="60" rx="12" ry="19" fill="#9c6128" transform="rotate(34 20 60)"/>
+      <ellipse cx="80" cy="60" rx="12" ry="19" fill="#9c6128" transform="rotate(-34 80 60)"/>
+      <ellipse cx="50" cy="52" rx="30" ry="32" fill="#c98a45"/>
+      <ellipse cx="50" cy="68" rx="17" ry="13" fill="#5a3b1e"/>
+      <ellipse cx="50" cy="62" rx="8" ry="6" fill="#1d1612"/>
+      <ellipse cx="38" cy="45" rx="5.5" ry="6" fill="#fff"/><ellipse cx="62" cy="45" rx="5.5" ry="6" fill="#fff"/>
+      <circle cx="38.5" cy="42.5" r="3.6" fill="#1d1612"/><circle cx="61.5" cy="42.5" r="3.6" fill="#1d1612"/>
+      <circle cx="39.6" cy="41.4" r="1.1" fill="#fff"/><circle cx="62.6" cy="41.4" r="1.1" fill="#fff"/>
+      <path d="M31 36 Q36 31 43 34" fill="none" stroke="#8d5a24" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M69 36 Q64 31 57 34" fill="none" stroke="#8d5a24" stroke-width="2.4" stroke-linecap="round"/>
+      <path d="M44 79 Q50 75 56 79" fill="none" stroke="#1d1612" stroke-width="2.2" stroke-linecap="round"/>
+    </g>
+    <g id="poop">
+      <ellipse cx="0" cy="1" rx="50" ry="8" fill="rgba(40,25,10,.25)"/>
+      <ellipse cx="0" cy="-15" rx="48" ry="17" fill="#7b4a1e" stroke="#47280c" stroke-width="4"/>
+      <ellipse cx="3" cy="-37" rx="36" ry="15" fill="#7b4a1e" stroke="#47280c" stroke-width="4"/>
+      <ellipse cx="6" cy="-57" rx="24" ry="12" fill="#7b4a1e" stroke="#47280c" stroke-width="4"/>
+      <path d="M6 -66 C 4 -78, 16 -82, 18 -92 C 26 -84, 24 -72, 14 -66 Z" fill="#7b4a1e" stroke="#47280c" stroke-width="4" stroke-linejoin="round"/>
+      <path d="M-34 -20 Q -20 -28 -6 -26" stroke="#a8703a" stroke-width="5" fill="none" stroke-linecap="round"/>
+      <path d="M-18 -42 Q -8 -48 4 -47" stroke="#a8703a" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+    </g>
+    <g id="puff">
+      <circle cx="0" cy="0" r="9" fill="#fff"/><circle cx="9" cy="-3" r="7" fill="#fff"/><circle cx="-8" cy="-2" r="6" fill="#fbf7ee"/><circle cx="2" cy="-8" r="6" fill="#fff"/>
+    </g>
+    <g id="cushionIcon">
+      <rect x="-26" y="-16" width="52" height="30" rx="9" fill="#8fa9b8" stroke="#6d8796" stroke-width="3"/>
+      <path d="M-10 -14 l6 10 l-8 6 l7 10" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>
+      <use href="#puff" transform="translate(16 -14) scale(.8)"/>
+    </g>
+  </defs>
+</svg>
+
+<!-- ===== landing ===== -->
+<div class="overlay" id="landing">
+  <div class="stack">
+  <div class="card">
+    <div class="hero">
+      <svg class="face" viewBox="0 0 100 100" aria-hidden="true"><use href="#poppyFace"/></svg>
+      <svg class="mk" viewBox="-40 -64 80 70" aria-hidden="true" id="heroMonkey"></svg>
+    </div>
+    <h1>Poppy Misbehaves</h1>
+    <p>Poppy is a good puppy. Mostly. Today she isn't.</p>
+    <p><b>You are Poppy.</b> One living room, three crimes. Nobody may catch you <b>in the act</b>.</p>
+    <div class="levels">
+      <div class="lvl r1"><div class="badge">1</div><div><span class="name">The rug</span><span class="what">You need to go. Not outside. On the rug.</span></div></div>
+      <div class="lvl r2"><div class="badge">2</div><div><span class="name">The LOTA</span><span class="what">The Eileen Gray sofa has five cushions. Not for long.</span></div></div>
+      <div class="lvl r3"><div class="badge">3</div><div><span class="name">The monkey</span><span class="what">Up on the shelf sits the little green knitted monkey. Everybody loves him.</span></div></div>
+      <div class="lvl r4"><div class="badge">⚖</div><div><span class="name">When they come home</span><span class="what">Poppy weighs her joy against her guilt.</span></div></div>
+    </div>
+    <button class="btn" id="startBtn">Be bad</button><br>
+    <button class="btn secondary small" id="helpBtn1">How to be bad</button>
+    <p class="dedication">For <b>Poppy</b>, who will be good. Mostly.</p>
+    <p class="best" id="landBest"></p>
+  </div>
+  <footer><a href="https://steffenhuck.github.io/">steffen huck</a></footer>
+  </div>
+</div>
+
+<!-- ===== help ===== -->
+<div class="overlay" id="helpPanel" style="display:none;">
+  <div class="stack"><div class="card">
+    <h2>How to be bad</h2>
+    <ul class="rules">
+      <li><b>Tap anywhere</b> in the room and Poppy runs there. Arrow keys work too.</li>
+      <li><b>The big button</b> does the crime. Some crimes you hold (tugging, chewing), one you can't stop once it's started.</li>
+      <li><b>Listen for footsteps.</b> When someone comes in, they see everything in front of them (the yellow light). What happens behind their back stays behind their back.</li>
+      <li><b>Watch for the "?"</b> Then they're about to turn round.</li>
+      <li><b>Your bed is safe.</b> A puppy asleep in her bed is innocent. Tap <b>To bed</b> and she runs there.</li>
+      <li>Every crime brings <b>joy</b>. And something else, which you'll find out about at the end.</li>
+    </ul>
+    <p class="small">Three rounds of 90 seconds each, in order. Caught in the act means starting again from the rug.</p>
+    <button class="btn" id="helpClose">Got it</button>
+  </div></div>
+</div>
+
+<!-- ===== round intro / result / game over ===== -->
+<div class="overlay" id="msg" style="display:none;">
+  <div class="stack"><div class="card" id="msgCard"></div>
+  <footer><a href="https://steffenhuck.github.io/">steffen huck</a></footer></div>
+</div>
+
+<!-- ===== finale ===== -->
+<div class="overlay" id="finale" style="display:none;">
+  <div class="stack"><div class="card" id="finCard">
+    <p class="sub" id="finSub">The key turns in the door</p>
+    <h2 id="finTitle">When they come home</h2>
+    <svg id="scaleSvg" viewBox="0 0 360 230" aria-label="Poppy's scale: joy against guilt"></svg>
+    <div class="tally"><span class="j" id="finJoy">Joy 0</span><span class="g" id="finGuilt">Guilt 0</span></div>
+    <div id="finBody"></div>
+  </div>
+  <footer><a href="https://steffenhuck.github.io/">steffen huck</a></footer></div>
+</div>
+
+<!-- ===== game ===== -->
+<div id="game">
+  <div id="top">
+    <div class="title">Poppy Misbehaves<small id="roundName">Round 1 · The rug</small></div>
+    <div style="display:flex; gap:6px">
+      <div class="chip" id="joyChip">♥ <span id="joyNum">0</span></div>
+      <div class="chip" id="clockChip">⏱ <span id="clock">1:30</span></div>
+    </div>
+  </div>
+  <div id="status">
+    <span id="goalTxt"></span>
+    <span id="warnTag" style="display:none">👣 someone's coming</span>
+  </div>
+  <div id="sceneWrap">
+    <svg id="scene" viewBox="0 0 800 420" aria-label="The living room"></svg>
+  </div>
+  <div id="meterWrap"><span id="meterLab"></span><div id="meter"><div id="meterFill"></div></div></div>
+  <div id="controls">
+    <button class="ctl" id="bedBtn">🛏️ To bed<small>look innocent</small></button>
+    <button class="ctl" id="actBtn"><span id="actTxt">Poop</span><small id="actSub"></small></button>
+  </div>
+  <div id="controls2">
+    <button class="btn secondary small" id="helpBtn2">How to be bad</button>
+    <button class="btn secondary small" id="soundBtn">Sound: on</button>
+    <button class="btn secondary small" id="restartBtn">Start again</button>
+  </div>
+  <footer><a href="https://steffenhuck.github.io/">steffen huck</a></footer>
+</div>
+
+<script>
+(() => {
+  'use strict';
+  const $ = id => document.getElementById(id);
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  const rnd = (a, b) => a + Math.random() * (b - a);
+  const NS = 'http://www.w3.org/2000/svg';
+
+  // ---------- constants ----------
+  const GY = 392, GY_SOFA = 290, S = 0.7;
+  const BED_X = 92, DOOR_X = 745, VR = 350;
+  const SOFA = {x0: 300, x1: 640};           // LOTA incl. side boxes
+  const RUG = {x0: 220, x1: 600, mx: 410};   // rug and its medallion centre
+  const SHELF = {x0: 468, x1: 646, y: 150, mx: 592};
+  const CLIMB = [360, 600], ON_SOFA = [370, 592], JUMP_OK = [500, 592];
+
+  const ROUNDS = [
+    {key:'rug',    name:'The rug',    n:1, time:90, firstGap:6, gap:[6,10],  stay:[2.5,4.5], speed:115, turn:.30, warn:2.3,
+     goal:'Poop in the living room. Nobody may see.',
+     intro:'Poppy needs to go. Soon. The garden is <b>right there</b>. She won\'t go in the garden.',
+     how:'Wait until she really needs to go, then tap <b>Poop</b>. Once she\'s squatting she can\'t stop, so pick your moment. The <b>middle of the rug</b> gives the most joy.'},
+    {key:'lota',   name:'The LOTA',   n:2, time:90, firstGap:4, gap:[5,9],   stay:[2.5,4.5], speed:130, turn:.45, warn:1.9,
+     goal:'Shred at least 3 of the 5 cushions.',
+     intro:'The sofa is an Eileen Gray LOTA. Everyone tells everyone. It has five cushions.',
+     how:'Stand in front of the sofa and <b>hold</b> the button to tug. Let go when someone comes. All five gives extra joy.'},
+    {key:'monkey', name:'The monkey', n:3, time:90, firstGap:4, gap:[4.5,8], stay:[2.5,4.5], speed:140, turn:.55, warn:1.6,
+     goal:'Get the monkey off the shelf, then chew.',
+     intro:'On the shelf above the sofa sits the little green knitted monkey. He has been in this family longer than anyone.',
+     how:'Climb onto the sofa, move under the shelf and <b>jump</b> when the marker is in the green. Then <b>hold</b> to chew. Careful: with the monkey in your mouth, being <b>seen at all</b> means you\'re caught. Except in your bed.'}
+  ];
+
+  // ---------- sound ----------
+  let sound = true, AC = null;
+  try { sound = localStorage.getItem('pm-sound') !== 'off'; } catch(e){}
+  function ac(){ if (!AC){ try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){} } if (AC && AC.state === 'suspended') AC.resume(); return AC; }
+  function tone(f, d, type='sine', vol=.12, f2=null, delay=0){
+    if (!sound) return; const a = ac(); if (!a) return;
+    const t = a.currentTime + delay, o = a.createOscillator(), g = a.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + d);
+    g.gain.setValueAtTime(vol, t); g.gain.exponentialRampToValueAtTime(.001, t + d);
+    o.connect(g); g.connect(a.destination); o.start(t); o.stop(t + d + .02);
+  }
+  function noise(d, vol=.12, hp=800, delay=0){
+    if (!sound) return; const a = ac(); if (!a) return;
+    const t = a.currentTime + delay, b = a.createBuffer(1, Math.max(1, a.sampleRate * d | 0), a.sampleRate), ch = b.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = (Math.random()*2-1) * (1 - i/ch.length);
+    const s = a.createBufferSource(), f = a.createBiquadFilter(), g = a.createGain();
+    f.type = 'highpass'; f.frequency.value = hp; g.gain.value = vol;
+    s.buffer = b; s.connect(f); f.connect(g); g.connect(a.destination); s.start(t);
+  }
+  const SFX = {
+    step(){ tone(90, .09, 'triangle', .16, 60); },
+    joy(){ tone(660, .12, 'sine', .1); tone(990, .16, 'sine', .08, null, .08); },
+    tear(){ noise(.18, .1, 1800); },
+    chew(){ noise(.07, .06, 2500); tone(240, .05, 'square', .02); },
+    boing(){ tone(220, .3, 'sine', .12, 520); },
+    bonk(){ tone(140, .2, 'square', .08, 70); },
+    huh(){ tone(500, .12, 'triangle', .08, 760); },
+    caught(){ tone(420, .25, 'sawtooth', .07, 210); tone(300, .45, 'sawtooth', .07, 150, .22); },
+    win(){ [523,659,784,1046].forEach((f,i) => tone(f, .18, 'triangle', .09, null, i*.1)); },
+    plop(){ tone(160, .18, 'sine', .14, 60); }
+  };
+
+  // ---------- monkey ----------
+  // stage 0 intact … 4 wrecked; stitched = repaired (crooked)
+  function monkeySVG(stage = 0, stitched = false){
+    const G = '#6fae4f', D = '#4f8a38', M = '#e9ddb4';
+    const rib = (x, y, w, h) => { let s = ''; for (let i = x - w + 4; i < x + w - 2; i += 5) s += `<path d="M${i} ${y-h+3} v${2*h-6}" stroke="${D}" stroke-width="1.3" opacity=".55"/>`; return s; };
+    const stitch = (x1, y1, x2, y2) => { let s = `<path d="M${x1} ${y1} L${x2} ${y2}" stroke="#8b2f3c" stroke-width="1.6"/>`; const n = 4; for (let i = 0; i <= n; i++){ const x = x1 + (x2-x1)*i/n, y = y1 + (y2-y1)*i/n; s += `<path d="M${x-2.5} ${y-3} l5 6" stroke="#8b2f3c" stroke-width="1.6" stroke-linecap="round"/>`; } return s; };
+    let s = `<g class="monkey">`;
+    // tail
+    s += `<path d="M14 -10 C 34 -8, 36 -30, 24 -32 C 16 -33, 18 -24, 24 -24" stroke="${G}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+    // legs
+    s += `<ellipse cx="-9" cy="-3" rx="7" ry="5" fill="${G}"/><ellipse cx="9" cy="-3" rx="7" ry="5" fill="${G}"/>`;
+    // body
+    s += `<ellipse cx="0" cy="-16" rx="14" ry="15" fill="${G}"/>${rib(0, -16, 13, 13)}<ellipse cx="0" cy="-13" rx="8" ry="9" fill="${M}" opacity=".9"/>`;
+    // arms
+    s += `<path d="M-12 -24 C -24 -18, -24 -6, -18 -2" stroke="${G}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+    if (stage >= 2 && !stitched) s += `<path d="M12 -22 C 18 -10, 22 0, 26 6" stroke="${G}" stroke-width="6" fill="none" stroke-linecap="round"/><use href="#puff" transform="translate(13 -22) scale(.45)"/>`;
+    else s += `<path d="M12 -24 C 24 -18, 24 -6, 18 -2" stroke="${G}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+    if (stitched) s += stitch(9, -27, 15, -21);
+    // head (tilted if wrecked)
+    s += `<g transform="rotate(${stage >= 4 && !stitched ? 16 : stitched ? -7 : 0} 0 -38)">`;
+    if (!(stage >= 1 && !stitched)) s += `<circle cx="-15" cy="-44" r="6.5" fill="${G}"/><circle cx="-15" cy="-44" r="3.5" fill="${M}"/>`;
+    else s += `<use href="#puff" transform="translate(-13 -46) scale(.42)"/>`;
+    s += `<circle cx="15" cy="-44" r="6.5" fill="${G}"/><circle cx="15" cy="-44" r="3.5" fill="${M}"/>`;
+    s += `<circle cx="0" cy="-42" r="14" fill="${G}"/>${rib(0, -42, 12, 11)}`;
+    s += `<ellipse cx="0" cy="-37" rx="9" ry="7" fill="${M}"/>`;
+    s += `<circle cx="-5" cy="-46" r="2.6" fill="#1d1612"/>`;
+    if (stitched) s += `<circle cx="5" cy="-46" r="2.9" fill="#c0392b"/><circle cx="5" cy="-46" r="1" fill="#7a1f17"/>` + stitch(-17, -48, -10, -41);
+    else if (stage < 4) s += `<circle cx="5" cy="-46" r="2.6" fill="#1d1612"/>`;
+    else s += `<path d="M3 -46 h4" stroke="${D}" stroke-width="1.4"/>`;
+    s += `<path d="M-3 -35 Q0 -32 3 -35" stroke="#5a3b1e" stroke-width="1.4" fill="none" stroke-linecap="round"/>`;
+    s += `</g>`;
+    if (stage >= 3 && !stitched) s += `<use href="#puff" transform="translate(-4 -14) scale(.6)"/><use href="#puff" transform="translate(7 -8) scale(.45)"/>`;
+    if (stitched) s += stitch(-8, -20, 7, -10);
+    return s + `</g>`;
+  }
+  $('heroMonkey').innerHTML = monkeySVG(0);
+
+  // ---------- Poppy ----------
+  function poppySVG(){
+    return `
+    <g id="pp">
+      <ellipse id="ppShadow" cx="5" cy="2" rx="58" ry="8" fill="rgba(40,25,10,.18)"/>
+      <g id="ppLift">
+        <g id="ppTail"><path d="M-46 -62 C -66 -70, -76 -92, -66 -112" stroke="#b5762e" stroke-width="9" fill="none" stroke-linecap="round"/></g>
+        <g id="ppLegs">
+          <g id="legB1"><rect x="-44" y="-44" width="12" height="40" rx="6" fill="#a96c2c"/><ellipse cx="-37" cy="-4" rx="9" ry="5" fill="#a96c2c"/></g>
+          <g id="legF1"><rect x="24" y="-44" width="12" height="40" rx="6" fill="#a96c2c"/><ellipse cx="32" cy="-4" rx="9" ry="5" fill="#a96c2c"/></g>
+          <g id="legB2"><rect x="-30" y="-46" width="13" height="42" rx="6" fill="#c98a45"/><ellipse cx="-22" cy="-4" rx="9" ry="5" fill="#b5762e"/></g>
+          <g id="legF2"><rect x="38" y="-46" width="13" height="42" rx="6" fill="#c98a45"/><ellipse cx="46" cy="-4" rx="9" ry="5" fill="#b5762e"/></g>
+        </g>
+        <g id="ppBody">
+          <ellipse cx="0" cy="-58" rx="54" ry="26" fill="#c98a45"/>
+          <ellipse cx="6" cy="-43" rx="38" ry="9" fill="#d9a466"/>
+          <path d="M-30 -82 Q -2 -88 26 -82 Q -2 -78 -30 -79 Z" fill="#8d5a24"/>
+          <circle cx="22" cy="-82" r="3" fill="#8d5a24"/><circle cx="14" cy="-84" r="3" fill="#8d5a24"/>
+        </g>
+        <g id="ppHead">
+          <ellipse cx="42" cy="-74" rx="17" ry="19" fill="#c98a45"/>
+          <path d="M30 -84 Q 42 -70 52 -60" stroke="#ff7a59" stroke-width="7" fill="none" stroke-linecap="round"/>
+          <ellipse cx="60" cy="-94" rx="23" ry="20" fill="#c98a45"/>
+          <ellipse cx="80" cy="-86" rx="14" ry="10" fill="#5a3b1e"/>
+          <circle cx="91" cy="-90" r="5" fill="#1d1612"/>
+          <path d="M50 -108 C 37 -106, 35 -86, 43 -77 C 52 -81, 56 -94, 54 -108 Z" fill="#9c6128"/>
+          <g id="ppEye"><circle cx="67" cy="-99" r="3.4" fill="#1d1612"/><circle cx="68" cy="-100.2" r="1.1" fill="#fff"/></g>
+          <path id="ppEyeShut" d="M63 -98 Q 67 -95 71 -98" stroke="#1d1612" stroke-width="2.4" fill="none" stroke-linecap="round" style="display:none"/>
+          <path d="M78 -79 Q 84 -76 89 -79" stroke="#1d1612" stroke-width="2" fill="none" stroke-linecap="round"/>
+          <g id="ppMonkey" transform="translate(90 -60) rotate(-18) scale(.95)" style="display:none"></g>
+        </g>
+      </g>
+    </g>`;
+  }
+
+  // ---------- the human ----------
+  function humanSVG(){
+    return `
+    <g id="hm" style="display:none">
+      <path id="cone" d="" fill="rgba(255,222,90,.34)" stroke="rgba(235,180,30,.6)" stroke-width="2" stroke-dasharray="6 6"/>
+      <g id="hmFig">
+        <ellipse cx="0" cy="2" rx="34" ry="6" fill="rgba(40,25,10,.18)"/>
+        <g id="hmLegA"><rect x="-13" y="-88" width="12" height="86" rx="5" fill="#3d4a6b"/><ellipse cx="-4" cy="-2" rx="11" ry="5" fill="#2a2a2a"/></g>
+        <g id="hmLegB"><rect x="1" y="-88" width="12" height="86" rx="5" fill="#34405e"/><ellipse cx="10" cy="-2" rx="11" ry="5" fill="#2a2a2a"/></g>
+        <rect x="-23" y="-156" width="46" height="76" rx="16" fill="#e07a5f"/>
+        <rect x="-12" y="-130" width="30" height="50" rx="7" fill="#fffaf0" opacity=".95"/>
+        <g id="hmArm"><rect x="-6" y="-150" width="12" height="62" rx="6" fill="#c9634a"/><circle cx="0" cy="-88" r="7" fill="#8d5a3c"/></g>
+        <rect x="-5" y="-170" width="10" height="16" fill="#8d5a3c"/>
+        <circle cx="2" cy="-184" r="19" fill="#8d5a3c"/>
+        <path d="M-17 -186 C -18 -206, 18 -210, 20 -192 C 12 -198, -2 -199, -8 -190 C -10 -184, -14 -180, -17 -186 Z" fill="#2b1d14"/>
+        <circle cx="12" cy="-186" r="2.6" fill="#1d1612"/>
+        <circle cx="21" cy="-180" r="3.2" fill="#7a4a30"/>
+        <path d="M8 -173 Q 13 -170 17 -173" stroke="#3b2214" stroke-width="2" fill="none" stroke-linecap="round"/>
+      </g>
+      <g id="hmQ" style="display:none"><circle cx="0" cy="-232" r="20" fill="#fff" stroke="#3f3a4a" stroke-width="3"/><text x="0" y="-222" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="28" fill="#c8312a">?</text></g>
+    </g>`;
+  }
+
+  // ---------- room ----------
+  function roomBG(){
+    let s = `
+    <defs>
+      <linearGradient id="wall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbeedb"/><stop offset="1" stop-color="#f3dfc2"/></linearGradient>
+      <pattern id="wallp" width="40" height="40" patternUnits="userSpaceOnUse"><rect width="40" height="40" fill="url(#wall)"/><circle cx="20" cy="20" r="2" fill="#efd5b0"/></pattern>
+      <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe6ff"/><stop offset="1" stop-color="#e9f7ff"/></linearGradient>
+      <linearGradient id="hall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cdb08a"/><stop offset="1" stop-color="#b8976d"/></linearGradient>
+    </defs>
+    <rect width="800" height="420" fill="url(#wallp)"/>
+    <!-- window onto the garden -->
+    <rect x="40" y="60" width="150" height="160" rx="6" fill="#fff" />
+    <rect x="50" y="70" width="130" height="140" fill="url(#sky)"/>
+    <path d="M50 170 Q 90 145 130 165 Q 160 150 180 162 V210 H50 Z" fill="#7cc65a"/>
+    <circle cx="150" cy="100" r="14" fill="#ffe27a"/>
+    <rect x="112" y="70" width="6" height="140" fill="#fff"/><rect x="50" y="137" width="130" height="6" fill="#fff"/>
+    <rect x="34" y="216" width="162" height="10" rx="3" fill="#e9dcc6"/>
+    <!-- picture -->
+    <rect x="236" y="70" width="110" height="80" rx="3" fill="#fff" stroke="#3f3a4a" stroke-width="4"/>
+    <rect x="248" y="82" width="40" height="56" fill="#ff7a59"/><rect x="296" y="82" width="38" height="26" fill="#ffd43b"/><rect x="296" y="114" width="38" height="24" fill="#4dabf7"/>
+    <!-- doorway -->
+    <rect x="700" y="118" width="92" height="214" fill="url(#hall)"/>
+    <rect x="694" y="112" width="104" height="10" rx="3" fill="#fff"/>
+    <rect x="694" y="112" width="10" height="222" fill="#fff"/><rect x="788" y="112" width="10" height="222" fill="#fff"/>
+    <rect x="712" y="150" width="30" height="40" rx="3" fill="#d9c3a0" opacity=".7"/>
+    <!-- lamp -->
+    <path d="M664 330 v-120" stroke="#3f3a4a" stroke-width="4"/>
+    <path d="M644 214 l20 -40 l20 40 z" fill="#ffd9a0" stroke="#3f3a4a" stroke-width="3" stroke-linejoin="round"/>
+    <ellipse cx="664" cy="332" rx="16" ry="4" fill="#3f3a4a"/>
+    <!-- skirting + floor -->
+    <rect x="0" y="326" width="800" height="10" fill="#fff8ec"/>
+    <rect x="0" y="336" width="800" height="84" fill="#c8935c"/>`;
+    for (let row = 0; row < 6; row++){
+      const y = 336 + row * 14, off = (row % 2) * 30;
+      for (let x = -60 + off; x < 820; x += 60) s += `<rect x="${x}" y="${y}" width="58" height="13" fill="${(row + x/60|0) % 2 ? '#c08a52' : '#cc9a63'}" />`;
+    }
+    // rug
+    s += `<path d="M${RUG.x0+20} 346 L${RUG.x1-20} 346 L${RUG.x1+10} 414 L${RUG.x0-10} 414 Z" fill="#a8483b"/>
+    <path d="M${RUG.x0+30} 351 L${RUG.x1-30} 351 L${RUG.x1-2} 409 L${RUG.x0+2} 409 Z" fill="none" stroke="#e7c27a" stroke-width="4"/>
+    <path d="M${RUG.x0+44} 357 L${RUG.x1-44} 357 L${RUG.x1-16} 403 L${RUG.x0+16} 403 Z" fill="none" stroke="#2f4f7a" stroke-width="3" stroke-dasharray="10 6"/>
+    <ellipse cx="${RUG.mx}" cy="380" rx="64" ry="18" fill="#2f4f7a"/>
+    <ellipse cx="${RUG.mx}" cy="380" rx="44" ry="11" fill="#e7c27a"/>
+    <ellipse cx="${RUG.mx}" cy="380" rx="20" ry="5" fill="#a8483b"/>`;
+    for (let x = RUG.x0 - 6; x <= RUG.x1 + 6; x += 10) s += `<path d="M${x} 414 v6" stroke="#f1e2c4" stroke-width="2.4"/>`;
+    // dog bed
+    s += `<ellipse cx="${BED_X}" cy="398" rx="70" ry="17" fill="#8b5a2b"/><ellipse cx="${BED_X}" cy="391" rx="60" ry="12" fill="#f4c7c3"/>
+    <text x="${BED_X}" y="417" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="600" font-size="11" fill="#fff8ec">POPPY</text>`;
+    // shelf
+    s += `<rect x="${SHELF.x0}" y="${SHELF.y}" width="${SHELF.x1 - SHELF.x0}" height="10" rx="2" fill="#8b5a2b"/>
+    <path d="M${SHELF.x0+16} ${SHELF.y+10} l0 18 l18 -18 z M${SHELF.x1-16} ${SHELF.y+10} l0 18 l-18 -18 z" fill="#7a4d24"/>
+    <rect x="${SHELF.x0+10}" y="${SHELF.y-42}" width="12" height="42" fill="#4dabf7"/><rect x="${SHELF.x0+23}" y="${SHELF.y-36}" width="10" height="36" fill="#ff7a59"/>
+    <rect x="${SHELF.x0+34}" y="${SHELF.y-46}" width="13" height="46" fill="#4fae57"/><rect x="${SHELF.x0+48}" y="${SHELF.y-38}" width="11" height="38" fill="#ffd43b" transform="rotate(10 ${SHELF.x0+53} ${SHELF.y})"/>
+    <path d="M${SHELF.x0+92} ${SHELF.y} q-4 -22 10 -28 q14 6 10 28 z" fill="#9fd3c7" stroke="#5f9e91" stroke-width="2"/>`;
+    return s;
+  }
+
+  // ---------- LOTA sofa ----------
+  function makeCushions(){
+    const c = [];
+    for (let i = 0; i < 2; i++) c.push({kind:'back', x:356 + i*116, y:222, w:114, h:62, hp:1});
+    for (let i = 0; i < 3; i++) c.push({kind:'seat', x:354 + i*78, y:282, w:76, h:26, hp:1});
+    return c;
+  }
+  function sofaSVG(cushions){
+    let s = `<g id="sofa">
+      <rect x="352" y="300" width="236" height="40" rx="4" fill="#4a4540"/>
+      <rect x="352" y="300" width="236" height="6" fill="#5f5953"/>
+      <rect x="360" y="340" width="8" height="8" fill="#2d2b28"/><rect x="572" y="340" width="8" height="8" fill="#2d2b28"/>`;
+    // side boxes: the LOTA's lacquered cubes
+    for (const x of [SOFA.x0, 588]){
+      s += `<rect x="${x}" y="258" width="52" height="86" rx="3" fill="#2d2b28"/><rect x="${x}" y="258" width="52" height="7" rx="3" fill="#4a4540"/>
+      <path d="M${x+6} 300 h40" stroke="#4a4540" stroke-width="2"/><circle cx="${x+26}" cy="282" r="2.6" fill="#b9a27a"/><circle cx="${x+26}" cy="320" r="2.6" fill="#b9a27a"/>`;
+    }
+    for (const c of cushions){
+      const fill = c.kind === 'back' ? '#8aa3b0' : '#9db4c0', edge = '#6d8796';
+      if (c.hp > 0){
+        s += `<rect x="${c.x}" y="${c.y}" width="${c.w}" height="${c.h}" rx="9" fill="${fill}" stroke="${edge}" stroke-width="2.5"/>`;
+        s += `<path d="M${c.x+8} ${c.y+c.h/2} h${c.w-16}" stroke="#b9ccd6" stroke-width="2" opacity=".6"/>`;
+        if (c.hp < .7) s += `<path d="M${c.x+c.w*.3} ${c.y+4} l8 ${c.h*.35} l-7 ${c.h*.2} l9 ${c.h*.3}" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+        if (c.hp < .4) s += `<use href="#puff" transform="translate(${c.x+c.w*.35} ${c.y+c.h*.4}) scale(.7)"/><path d="M${c.x+c.w*.7} ${c.y+3} l-6 ${c.h*.5}" stroke="#fff" stroke-width="3" stroke-linecap="round"/>`;
+      } else {
+        const yb = c.y + c.h, h2 = c.kind === 'back' ? c.h * .45 : c.h * .55;
+        s += `<path d="M${c.x} ${yb} L${c.x} ${yb-h2+6} L${c.x+c.w*.18} ${yb-h2} L${c.x+c.w*.3} ${yb-h2+10} L${c.x+c.w*.5} ${yb-h2+2} L${c.x+c.w*.68} ${yb-h2+12} L${c.x+c.w*.84} ${yb-h2+3} L${c.x+c.w} ${yb-h2+8} L${c.x+c.w} ${yb} Z" fill="${fill}" stroke="${edge}" stroke-width="2.5" stroke-linejoin="round"/>`;
+        for (let k = 0; k < 4; k++) s += `<use href="#puff" transform="translate(${c.x + 10 + k*(c.w-20)/3} ${yb-h2+4 - (k%2)*5}) scale(${.8 + (k%2)*.3})"/>`;
+      }
+    }
+    return s + `</g>`;
+  }
+
+  // ---------- state ----------
+  const scene = $('scene');
+  let run, g, raf = null, last = 0, tt = 0, paused = true;
+  let keys = {}, actHeld = false;
+
+  function newRun(){
+    run = {round: 0, poopX: null, poopJoy: 0, poopLabel: '', cushions: makeCushions(), monkeyStage: 0, monkeyGrabbed: false,
+           puffs: [], joy: {rug: 0, lota: 0, monkey: 0}};
+  }
+
+  function buildScene(){
+    scene.innerHTML = `<g id="bg">${roomBG()}</g><g id="ev"></g>${humanSVG()}${poppySVG()}
+      <g id="jumpBar" style="display:none"><rect x="-50" y="0" width="100" height="12" rx="6" fill="#fff" stroke="#3f3a4a" stroke-width="2.5"/><rect id="jbZone" x="0" y="2" width="20" height="8" rx="3" fill="#69db7c"/><rect id="jbMark" x="-2" y="-4" width="5" height="20" rx="2" fill="#3f3a4a"/></g>
+      <g id="pb" style="display:none"><rect id="pbRect" x="-50" y="-22" width="100" height="34" rx="16" fill="#fff" stroke="#3f3a4a" stroke-width="2.5"/><text id="pbText" x="0" y="1" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="600" font-size="19" fill="#3f3a4a"></text></g>
+      <g id="steps" style="display:none" font-size="26"><text x="${DOOR_X-26}" y="318">🐾</text><text x="${DOOR_X+4}" y="300">👣</text></g>
+      <g id="floats"></g>`;
+    P = {};
+    ['pp','ppLift','ppHead','ppTail','ppLegs','legF1','legF2','legB1','legB2','ppEye','ppEyeShut','ppMonkey','ppShadow','hm','hmFig','hmLegA','hmLegB','hmArm','hmQ','cone','ev','pb','pbRect','pbText','steps','floats','jumpBar','jbZone','jbMark'].forEach(id => P[id] = document.getElementById(id));
+  }
+  let P = {};
+
+  function drawEvidence(){
+    let s = sofaSVG(run.cushions);
+    if (run.round === 2 && !run.monkeyGrabbed) s += `<g transform="translate(${SHELF.mx} ${SHELF.y}) scale(.95)">${monkeySVG(0)}</g>`;
+    if (run.poopX != null) s += `<use href="#poop" transform="translate(${run.poopX} ${GY+6}) scale(.36)"/>`;
+    for (const p of run.puffs) s += `<use href="#puff" transform="translate(${p.x.toFixed(0)} ${p.y.toFixed(0)}) scale(${p.s.toFixed(2)})"/>`;
+    if (g && g.monkeyDropped) s += `<g transform="translate(${g.monkeyDropped} ${GY+4}) scale(.8)">${monkeySVG(run.monkeyStage)}</g>`;
+    P.ev.innerHTML = s;
+  }
+
+  function startRound(){
+    const R = ROUNDS[run.round];
+    g = {
+      R, time: R.time, joy: 0, over: false,
+      p: {x: BED_X, y: GY, dir: 1, mode: 'bed', tx: null, speed: 230, onSofa: false, hop: null, jump: null, actUntil: 0, walkPhase: 0},
+      h: {state: 'away', x: 860, dir: -1, timer: R.firstGap, target: 400, turnPlanned: false, turnAt: 0, phase: 0},
+      urge: 0, squat: 0, chewP: 0, tugTarget: -1, poopDone: false, endAt: null, monkeyDropped: null, hasMonkey: false, bubble: null, bubbleUntil: 0
+    };
+    buildScene(); drawEvidence();
+    $('roundName').textContent = `Round ${R.n} · ${R.name}`;
+    $('goalTxt').innerHTML = R.goal;
+    updateJoy();
+    paused = false; last = performance.now();
+    if (!raf) raf = requestAnimationFrame(loop);
+  }
+
+  // ---------- helpers ----------
+  function say(t, dur = 1.4){ g.bubble = t; g.bubbleUntil = tt + dur; }
+  function addJoy(n, label){
+    g.joy += n; run.joy[g.R.key] += n; updateJoy(); SFX.joy();
+    floatText(`+${n} ♥`, g.p.x, g.p.y - 120, '#ff8a2e');
+    if (label) say(label, 1.6);
+  }
+  function updateJoy(){ $('joyNum').textContent = run.joy.rug + run.joy.lota + run.joy.monkey; }
+  function floatText(t, x, y, col){
+    const e = document.createElementNS(NS, 'text');
+    e.setAttribute('x', x); e.setAttribute('y', y); e.setAttribute('text-anchor', 'middle');
+    e.setAttribute('font-family', 'Fredoka, sans-serif'); e.setAttribute('font-weight', '700'); e.setAttribute('font-size', '24');
+    e.setAttribute('fill', col); e.setAttribute('stroke', '#fff'); e.setAttribute('stroke-width', '5'); e.setAttribute('paint-order', 'stroke');
+    e.textContent = t; P.floats.appendChild(e);
+    const t0 = tt; e._t0 = t0; e._y = y;
+  }
+  function spawnPuffs(x, n, yTop = GY - 6){
+    for (let i = 0; i < n; i++) run.puffs.push({x: clamp(x + rnd(-70, 70), 20, 780), y: rnd(yTop, GY + 18), s: rnd(.6, 1.1)});
+    if (run.puffs.length > 60) run.puffs.splice(0, run.puffs.length - 60);
+  }
+  function humanIn(){ return ['walk','look','turnwarn','leave'].includes(g.h.state) && g.h.x < 800; }
+  function inCone(x){ const h = g.h; return h.dir < 0 ? (x <= h.x + 10 && x >= h.x - VR) : (x >= h.x - 10 && x <= h.x + VR); }
+  function acting(){ return tt < g.p.actUntil || ['squat','jump','climb'].includes(g.p.mode); }
+
+  // ---------- input ----------
+  function svgX(ev){
+    const r = scene.getBoundingClientRect();
+    return {x: (ev.clientX - r.left) / r.width * 800, y: (ev.clientY - r.top) / r.height * 420};
+  }
+  scene.addEventListener('pointerdown', ev => {
+    if (paused || g.over) return; ac();
+    const {x, y} = svgX(ev); goTo(x, y);
+  });
+  function goTo(x, y = 380){
+    const p = g.p;
+    if (['squat','jump','climb'].includes(p.mode)) return;
+    if (p.onSofa){
+      if (y < 330 && x > ON_SOFA[0] - 30 && x < ON_SOFA[1] + 30){ p.tx = clamp(x, ON_SOFA[0], ON_SOFA[1]); p.mode = 'walk'; p.speed = 200; return; }
+      hopDown(); p.tx = clamp(x, 50, 770); p.speed = 230; return;
+    }
+    p.tx = clamp(x, 50, 770); p.mode = 'walk'; p.speed = 230;
+  }
+  function hopDown(){ const p = g.p; p.onSofa = false; p.hop = {from: p.y, to: GY, t: 0, dur: .35}; p.mode = 'walk'; }
+  $('bedBtn').addEventListener('click', () => { if (paused || g.over) return; ac(); toBed(); });
+  function toBed(){
+    const p = g.p; if (['squat','jump','climb'].includes(p.mode)) return;
+    if (p.onSofa) hopDown();
+    p.tx = BED_X; p.mode = 'walk'; p.speed = 330;
+  }
+
+  const actBtn = $('actBtn');
+  function actDown(){
+    if (paused || g.over) return; ac();
+    actHeld = true; actBtn.classList.add('held');
+    const a = currentAction();
+    if (!a.ok) { if (a.why) say(a.why, 1.2); return; }
+    if (a.kind === 'poop') startSquat();
+    if (a.kind === 'climb') startClimb();
+    if (a.kind === 'jump') startJump();
+  }
+  function actUp(){ actHeld = false; actBtn.classList.remove('held'); }
+  actBtn.addEventListener('pointerdown', e => { e.preventDefault(); actDown(); });
+  window.addEventListener('pointerup', actUp); window.addEventListener('pointercancel', actUp);
+  actBtn.addEventListener('contextmenu', e => e.preventDefault());
+
+  window.addEventListener('keydown', e => {
+    if (paused || !g || g.over) return;
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowRight'){ keys[e.key] = true; e.preventDefault(); }
+    if (e.key === ' ' && !e.repeat){ e.preventDefault(); actDown(); }
+    if ((e.key === 'b' || e.key === 'B') && !e.repeat) toBed();
+  });
+  window.addEventListener('keyup', e => { keys[e.key] = false; if (e.key === ' ') actUp(); });
+
+  function nearestCushion(){
+    const x = g.p.x; let best = -1, bd = 1e9;
+    run.cushions.forEach((c, i) => { if (c.hp <= 0) return; const d = Math.abs(c.x + c.w/2 - x) + (c.kind === 'back' ? 30 : 0); if (d < bd){ bd = d; best = i; } });
+    return best;
+  }
+  function currentAction(){
+    const p = g.p, k = g.R.key, busy = ['squat','jump','climb'].includes(p.mode);
+    if (busy) return {ok:false, label:'…', sub:'busy'};
+    if (k === 'rug'){
+      if (g.poopDone) return {ok:false, label:'Done', sub:'phew'};
+      if (g.urge < 1) return {ok:false, label:'Poop', sub:'not yet', why:'not yet…'};
+      if (p.mode === 'bed') return {ok:false, label:'Poop', sub:'not in her own bed', why:'not in MY bed!'};
+      return {ok:true, kind:'poop', label:'Poop', sub:'can\'t stop once started', hot:true};
+    }
+    if (k === 'lota'){
+      if (p.x < SOFA.x0 + 40 || p.x > SOFA.x1 - 30 || p.onSofa) return {ok:false, label:'Tug', sub:'go to the sofa', why:'where\'s the sofa?'};
+      if (nearestCushion() < 0) return {ok:false, label:'Tug', sub:'nothing left'};
+      return {ok:true, kind:'tug', label:'Tug', sub:'hold'};
+    }
+    // monkey
+    if (g.hasMonkey) return {ok:true, kind:'chew', label:'Chew', sub:'hold'};
+    if (run.monkeyGrabbed) return {ok:false, label:'Chew', sub:'pick him up'};
+    if (!p.onSofa){
+      if (p.x >= CLIMB[0] && p.x <= CLIMB[1] && p.mode !== 'bed') return {ok:true, kind:'climb', label:'Climb', sub:'onto the sofa'};
+      return {ok:false, label:'Climb', sub:'go to the sofa', why:'up there…'};
+    }
+    if (p.x >= JUMP_OK[0] && p.x <= JUMP_OK[1]) return {ok:true, kind:'jump', label:'Jump', sub:'when it\'s green', hot: jumpMeter() >= jumpZone()[0] && jumpMeter() <= jumpZone()[1]};
+    return {ok:false, label:'Jump', sub:'move under the shelf', why:'closer…'};
+  }
+
+  // ---------- crimes ----------
+  function startSquat(){ const p = g.p; p.mode = 'squat'; g.squat = 0; p.tx = null; SFX.plop(); }
+  function finishPoop(){
+    const x = g.p.x; run.poopX = x - g.p.dir * 30;
+    let j, l;
+    if (Math.abs(run.poopX - RUG.mx) < 62){ j = 100; l = 'right on the medallion'; }
+    else if (run.poopX > RUG.x0 && run.poopX < RUG.x1){ j = 60; l = 'on the rug'; }
+    else if (run.poopX > BED_X + 70 || run.poopX < BED_X - 70){ j = 25; l = 'on the parquet. meh'; }
+    else { j = 25; l = 'next to her bed. meh'; }
+    run.poopJoy = j; run.poopLabel = l; g.poopDone = true; g.p.mode = 'idle';
+    drawEvidence(); addJoy(j, l);
+    g.endAt = tt + 1.6;
+  }
+  function startClimb(){ const p = g.p; p.mode = 'climb'; p.tx = null; p.hop = {from: GY, to: GY_SOFA, t: 0, dur: .45, arc: 40}; p.onSofa = true; SFX.boing(); }
+  function jumpZone(){ return [.62, .8]; }
+  function jumpMeter(){ return (Math.sin(tt * 3.4) + 1) / 2; }
+  function startJump(){
+    const p = g.p, m = jumpMeter(), z = jumpZone();
+    p.dir = p.x < SHELF.mx ? 1 : -1;
+    const res = m < z[0] ? 'low' : m > z[1] ? 'high' : 'ok';
+    p.mode = 'jump'; p.jump = {t: 0, dur: .8, h: res === 'low' ? 50 : res === 'high' ? 132 : 112, res, done: false};
+    SFX.boing();
+  }
+  function grabMonkey(){
+    run.monkeyGrabbed = true; g.hasMonkey = true; drawEvidence();
+    P.ppMonkey.innerHTML = monkeySVG(run.monkeyStage); P.ppMonkey.style.display = '';
+    addJoy(30, 'GOT HIM!');
+  }
+
+  // ---------- loop ----------
+  function loop(now){
+    raf = requestAnimationFrame(loop);
+    const dt = Math.min(.05, (now - last) / 1000); last = now;
+    if (paused) return;
+    tt += dt;
+    update(dt);
+    render(dt);
+  }
+
+  function update(dt){
+    const p = g.p, R = g.R, h = g.h;
+    if (!g.over){
+      g.time -= dt;
+      if (g.time <= 0){ g.time = 0; timeUp(); return; }
+    }
+    // keyboard steering
+    if (!['squat','jump','climb'].includes(p.mode) && (keys.ArrowLeft || keys.ArrowRight)){
+      if (p.onSofa && (p.x <= ON_SOFA[0] && keys.ArrowLeft || p.x >= ON_SOFA[1] && keys.ArrowRight)) hopDown();
+      const d = keys.ArrowLeft ? -1 : 1;
+      p.tx = clamp(p.x + d * 40, p.onSofa ? ON_SOFA[0] : 50, p.onSofa ? ON_SOFA[1] : 770); p.mode = 'walk'; p.speed = 230;
+    }
+    // hop / climb
+    if (p.hop){
+      p.hop.t += dt; const k = clamp(p.hop.t / p.hop.dur, 0, 1);
+      p.y = p.hop.from + (p.hop.to - p.hop.from) * k - Math.sin(k * Math.PI) * (p.hop.arc || 22);
+      if (k >= 1){ p.y = p.hop.to; p.hop = null; if (p.mode === 'climb') p.mode = 'idle'; }
+    }
+    // walking
+    if (p.mode === 'walk' && p.tx != null){
+      const d = p.tx - p.x;
+      if (Math.abs(d) < 3){
+        p.x = p.tx; p.tx = null;
+        p.mode = (!p.onSofa && Math.abs(p.x - BED_X) < 30) ? 'bed' : 'idle';
+        if (p.mode === 'bed'){ p.dir = 1; }
+      } else {
+        p.dir = Math.sign(d); p.x += Math.sign(d) * Math.min(Math.abs(d), p.speed * dt);
+        p.walkPhase += dt * (p.speed > 260 ? 22 : 13);
+      }
+    }
+    // jump
+    if (p.mode === 'jump'){
+      const j = p.jump; j.t += dt; const k = clamp(j.t / j.dur, 0, 1);
+      if (!j.done && k > .45){
+        j.done = true;
+        if (j.res === 'ok'){ grabMonkey(); }
+        else if (j.res === 'high'){ SFX.bonk(); say('BONK', 1); }
+        else say('too low', 1);
+      }
+      if (k >= 1){ p.mode = 'idle'; p.jump = null; p.actUntil = tt + .25; }
+    }
+    // round-specific
+    if (R.key === 'rug'){
+      if (!g.poopDone && g.urge < 1){
+        g.urge = clamp(g.urge + dt / 13, 0, 1);
+        if (g.urge >= 1){ say('need to GO!', 2); SFX.huh(); }
+      }
+      if (p.mode === 'squat'){
+        g.squat += dt;
+        if (g.squat >= 3) finishPoop();
+      }
+    }
+    if (R.key === 'lota'){
+      const a = currentAction();
+      if (actHeld && a.ok && a.kind === 'tug' && p.mode !== 'walk'){
+        const i = nearestCushion(), c = run.cushions[i];
+        p.mode = 'tug'; p.dir = 1; p.actUntil = tt + .25;
+        const before = c.hp; c.hp = clamp(c.hp - dt / 2.4, 0, 1);
+        if ((before >= .7 && c.hp < .7) || (before >= .4 && c.hp < .4)) { SFX.tear(); drawEvidence(); }
+        if (Math.random() < dt * 9) SFX.chew();
+        if (c.hp <= 0){
+          SFX.tear(); spawnPuffs(c.x + c.w / 2, 7, 360); drawEvidence();
+          const left = run.cushions.filter(q => q.hp > 0).length;
+          addJoy(40, left === 0 ? 'SNOW!' : 'rrrrip!');
+          if (left === 0){
+            g.endAt = tt + 2;
+            setTimeout(() => { if (g && g.R.key === 'lota'){ g.joy += 40; run.joy.lota += 40; updateJoy(); floatText('+40 ♥', g.p.x, g.p.y - 150, '#ff8a2e'); say('all five!', 1.4); SFX.joy(); } }, 650);
+          }
+        }
+      } else if (p.mode === 'tug') p.mode = 'idle';
+    }
+    if (R.key === 'monkey'){
+      if (actHeld && g.hasMonkey && p.mode !== 'walk' && p.mode !== 'jump' && run.monkeyStage < 4){
+        p.mode = p.mode === 'bed' ? 'bedchew' : 'chew'; p.actUntil = tt + .25;
+        g.chewP += dt;
+        if (Math.random() < dt * 7) SFX.chew();
+        if (g.chewP >= 2.2){
+          g.chewP = 0; run.monkeyStage++; P.ppMonkey.innerHTML = monkeySVG(run.monkeyStage);
+          spawnPuffs(p.x + p.dir * 50, run.monkeyStage === 3 ? 6 : 2, p.onSofa ? 330 : GY - 6); drawEvidence(); SFX.tear();
+          const lines = ['', 'an ear!', 'an arm…', 'his stuffing!', 'his eye.'];
+          addJoy(40, lines[run.monkeyStage]);
+          if (run.monkeyStage >= 4){ g.endAt = tt + 2; }
+        }
+      } else if (p.mode === 'chew') p.mode = 'idle';
+      else if (p.mode === 'bedchew') p.mode = 'bed';
+    }
+    // human
+    updateHuman(dt);
+    // caught?
+    if (!g.over && humanIn() && inCone(p.x)){
+      const holding = R.key === 'monkey' && g.hasMonkey && p.mode !== 'bed';
+      if (acting() || holding) caught(holding && !acting() ? 'holding' : 'act');
+    }
+    if (g.endAt && tt >= g.endAt && !g.over) roundWon();
+  }
+
+  function updateHuman(dt){
+    const h = g.h, R = g.R;
+    h.phase += dt;
+    switch (h.state){
+      case 'away':
+        h.timer -= dt;
+        if (h.timer <= R.warn){ h.state = 'warn'; }
+        break;
+      case 'warn':
+        h.timer -= dt;
+        if (Math.floor((h.timer) * 3) !== Math.floor((h.timer + dt) * 3)) SFX.step();
+        if (h.timer <= 0){
+          h.state = 'walk'; h.x = 830; h.dir = -1;
+          h.target = rnd(160, 660);
+          h.turnPlanned = Math.random() < R.turn;
+        }
+        break;
+      case 'walk': {
+        const d = h.target - h.x;
+        if (Math.abs(d) < 3){ h.state = 'look'; h.timer = rnd(R.stay[0], R.stay[1]); h.turnAt = h.timer * rnd(.35, .6); }
+        else { h.dir = Math.sign(d); h.x += Math.sign(d) * Math.min(Math.abs(d), R.speed * dt); }
+        if (Math.floor(h.phase * 2.5) !== Math.floor((h.phase - dt) * 2.5)) SFX.step();
+        break;
+      }
+      case 'look':
+        h.timer -= dt;
+        if (h.turnPlanned && h.timer <= h.turnAt){ h.turnPlanned = false; h.state = 'turnwarn'; h.qt = .75; SFX.huh(); }
+        else if (h.timer <= 0){ h.state = 'leave'; h.dir = 1; }
+        break;
+      case 'turnwarn':
+        h.qt -= dt; h.timer -= dt;
+        if (h.qt <= 0){ h.dir = -h.dir; h.state = 'look'; h.timer = Math.max(h.timer, 1.4); }
+        break;
+      case 'leave':
+        h.dir = 1; h.x += R.speed * dt;
+        if (Math.floor(h.phase * 2.5) !== Math.floor((h.phase - dt) * 2.5)) SFX.step();
+        if (h.x > 840){ h.state = 'away'; h.timer = rnd(R.gap[0], R.gap[1]) + R.warn; }
+        break;
+    }
+  }
+
+  // ---------- render ----------
+  function render(dt){
+    const p = g.p, h = g.h, m = p.mode;
+    // Poppy pose
+    const moving = m === 'walk' && p.tx != null;
+    let lift = 0, bodyRot = 0, headRot = Math.sin(tt*2)*2, legA = moving ? Math.sin(p.walkPhase)*24 : 0;
+    let backFold = 0, tailRot = Math.sin(tt*5)*10, legsOn = true, eyesShut = false;
+    if (moving && p.speed > 260) lift = -Math.abs(Math.sin(p.walkPhase))*6;
+    if (g.R.key === 'rug' && g.urge >= 1 && !g.poopDone && (m === 'idle' || m === 'walk')){ headRot = 22 + Math.sin(tt*14)*5; }
+    if (m === 'squat'){ bodyRot = -16; backFold = 1; tailRot = -28; headRot = -6; legA = 0; }
+    if (m === 'bed' || m === 'bedchew'){ lift = 22; legsOn = false; eyesShut = m === 'bed'; headRot = m === 'bed' ? 20 : 26 + Math.sin(tt*20)*6; tailRot = 14; }
+    if (m === 'tug'){ bodyRot = 8; headRot = 30 + Math.sin(tt*26)*14; tailRot = Math.sin(tt*30)*26; lift = Math.sin(tt*13)*2; }
+    if (m === 'chew'){ headRot = 22 + Math.sin(tt*22)*8; tailRot = Math.sin(tt*24)*24; }
+    if (m === 'jump'){ const k = clamp(p.jump.t / p.jump.dur, 0, 1); lift = -Math.sin(k*Math.PI) * p.jump.h; headRot = -28; bodyRot = -18; legA = 30; }
+    if (m === 'climb'){ bodyRot = -20; legA = 26; }
+    if (g.over && g.caughtFlag){ headRot = 26; tailRot = 60; lift = m === 'bed' ? 22 : 8; legA = 0; eyesShut = false; }
+    P.pp.setAttribute('transform', `translate(${p.x.toFixed(1)},${p.y.toFixed(1)}) scale(${p.dir*S},${S})`);
+    P.ppLift.setAttribute('transform', `translate(0,${lift.toFixed(1)}) rotate(${bodyRot} 34 -30)`);
+    P.ppHead.setAttribute('transform', `rotate(${headRot.toFixed(1)} 40 -70)`);
+    P.ppTail.setAttribute('transform', `rotate(${tailRot.toFixed(1)} -46 -62)`);
+    P.ppLegs.style.opacity = legsOn ? 1 : 0;
+    P.ppShadow.style.opacity = p.onSofa || m === 'bed' || m === 'bedchew' ? 0 : 1;
+    P.legF1.setAttribute('transform', `rotate(${legA.toFixed(1)} 30 -42)`);
+    P.legF2.setAttribute('transform', `rotate(${(-legA).toFixed(1)} 44 -42)`);
+    if (backFold){ P.legB1.setAttribute('transform', 'rotate(-62 -38 -42)'); P.legB2.setAttribute('transform', 'rotate(-62 -24 -42)'); }
+    else { P.legB1.setAttribute('transform', `rotate(${(-legA).toFixed(1)} -38 -42)`); P.legB2.setAttribute('transform', `rotate(${legA.toFixed(1)} -24 -42)`); }
+    P.ppEye.style.display = eyesShut ? 'none' : ''; P.ppEyeShut.style.display = eyesShut ? '' : 'none';
+    P.ppMonkey.style.display = g.hasMonkey && m !== 'bed' ? '' : 'none';
+
+    // speech bubble
+    let txt = tt < g.bubbleUntil ? g.bubble : null;
+    if (!txt){
+      if (m === 'squat') txt = 'nngh…';
+      else if (m === 'tug') txt = 'grrrr!';
+      else if (m === 'chew' || m === 'bedchew') txt = 'nom nom nom';
+      else if (m === 'bed' && humanIn()) txt = 'z z z';
+      else if (g.R.key === 'rug' && g.urge >= 1 && !g.poopDone && m !== 'bed') txt = 'sniff sniff';
+    }
+    if (txt){
+      P.pbText.textContent = txt;
+      const w = Math.max(80, txt.length * 11 + 30);
+      P.pbRect.setAttribute('x', -w/2); P.pbRect.setAttribute('width', w);
+      const bx = clamp(p.x + p.dir*30, w/2 + 6, 800 - w/2 - 6), by = p.y - 104 + lift;
+      P.pb.setAttribute('transform', `translate(${bx.toFixed(1)},${Math.max(28, by).toFixed(1)})`);
+      P.pb.style.display = '';
+    } else P.pb.style.display = 'none';
+
+    // jump bar
+    const showBar = g.R.key === 'monkey' && p.onSofa && !g.hasMonkey && !run.monkeyGrabbed && p.x >= JUMP_OK[0] && p.x <= JUMP_OK[1] && m !== 'jump' && m !== 'climb';
+    P.jumpBar.style.display = showBar ? '' : 'none';
+    if (showBar){
+      const z = jumpZone();
+      P.jumpBar.setAttribute('transform', `translate(${clamp(p.x - p.dir*10, 60, 740)} ${p.y + 14})`);
+      P.jbZone.setAttribute('x', -48 + z[0]*96); P.jbZone.setAttribute('width', (z[1]-z[0])*96);
+      P.jbMark.setAttribute('x', -50 + jumpMeter()*100 - 2.5);
+    }
+
+    // human
+    const vis = ['walk','look','turnwarn','leave'].includes(h.state);
+    P.hm.style.display = vis ? '' : 'none';
+    if (vis){
+      P.hmFig.setAttribute('transform', `translate(${h.x.toFixed(1)},${GY}) scale(${h.dir},1)`);
+      const walking = h.state === 'walk' || h.state === 'leave';
+      const la = walking ? Math.sin(h.phase * 9) * 18 : 0;
+      P.hmLegA.setAttribute('transform', `rotate(${la.toFixed(1)} -7 -88)`);
+      P.hmLegB.setAttribute('transform', `rotate(${(-la).toFixed(1)} 7 -88)`);
+      P.hmArm.setAttribute('transform', `rotate(${(-la*.8).toFixed(1)} 0 -146)`);
+      const ex = h.x + h.dir * 12, ey = GY - 186, far = h.x + h.dir * VR;
+      P.cone.setAttribute('d', `M${ex} ${ey} L${far} ${ey - 70} L${far} ${GY + 26} L${h.x} ${GY + 26} Z`);
+      P.hmQ.style.display = h.state === 'turnwarn' ? '' : 'none';
+      P.hmQ.setAttribute('transform', `translate(${h.x},${GY})`);
+    }
+    P.steps.style.display = h.state === 'warn' ? '' : 'none';
+    if (h.state === 'warn') P.steps.setAttribute('opacity', (.5 + .5*Math.sin(tt*14)).toFixed(2));
+    $('warnTag').style.display = h.state === 'warn' ? '' : 'none';
+
+    // floats
+    for (const e of [...P.floats.children]){
+      const age = tt - e._t0;
+      if (age > 1.3){ e.remove(); continue; }
+      e.setAttribute('y', (e._y - age * 40).toFixed(1)); e.setAttribute('opacity', (1 - age/1.3).toFixed(2));
+    }
+
+    // HUD
+    const s = Math.ceil(g.time);
+    $('clock').textContent = `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
+    $('clockChip').classList.toggle('low', g.time < 15);
+    const a = currentAction();
+    $('actTxt').textContent = a.label; $('actSub').textContent = a.sub || '';
+    actBtn.classList.toggle('off', !a.ok); actBtn.classList.toggle('hot', !!a.hot);
+    // meter
+    const R = g.R; let lab = '', val = 0;
+    if (R.key === 'rug'){ lab = g.poopDone ? 'Done' : g.urge >= 1 ? 'Needs to go: NOW' : 'Needs to go'; val = g.poopDone ? 1 : m === 'squat' ? g.squat / 3 : g.urge; }
+    if (R.key === 'lota'){ const n = run.cushions.filter(c => c.hp <= 0).length; lab = `Cushions ${n} / 5`; const i = nearestCushion(); val = n / 5 + (i >= 0 && m === 'tug' ? (1 - run.cushions[i].hp) / 5 : 0); }
+    if (R.key === 'monkey'){ lab = !run.monkeyGrabbed ? 'Monkey: on the shelf' : `Monkey: ${['whole','one ear','one arm','stuffing out','one eye'][run.monkeyStage]}`; val = run.monkeyStage / 4 + (g.hasMonkey && run.monkeyStage < 4 ? g.chewP / 2.2 / 4 : 0); }
+    $('meterLab').textContent = lab; $('meterFill').style.width = (clamp(val, 0, 1) * 100).toFixed(1) + '%';
+  }
+
+  // ---------- outcomes ----------
+  function caught(kind){
+    g.over = true; g.caughtFlag = true; SFX.caught();
+    $('sceneWrap').classList.remove('shake'); void $('sceneWrap').offsetWidth; $('sceneWrap').classList.add('shake');
+    g.p.mode = g.p.mode === 'bedchew' ? 'bed' : 'idle'; g.p.tx = null;
+    g.h.state = 'look'; g.h.timer = 99; g.h.turnPlanned = false;
+    const lines = {
+      rug: 'Caught squatting on the rug. She is carried outside, mid-business, and finishes in the garden. Where she is supposed to.',
+      lota: 'Caught with a mouthful of LOTA. The sofa is out of bounds now. Forever. Or until tomorrow.',
+      monkey: kind === 'holding' ? 'Caught with the monkey in her mouth. He is taken back up to the shelf, a little damp, and the shelf is moved higher.' : 'Caught in the act. The monkey is rescued and goes back up, out of reach.'
+    };
+    setTimeout(() => showMsg(`
+      <div class="hero"><svg class="face" viewBox="0 0 100 100"><use href="#poppyGuilty"/></svg></div>
+      <p class="sub">Round ${g.R.n} · ${g.R.name}</p>
+      <div class="stamp no">CAUGHT</div>
+      <p>${lines[g.R.key]}</p>
+      <p class="small">Mischief has to start again from the rug.</p>
+      <button class="btn" id="mBtn">Start again</button>`, () => { newRun(); showIntro(); }), 1200);
+  }
+  function timeUp(){
+    if (g.over) return;
+    const k = g.R.key, nC = run.cushions.filter(c => c.hp <= 0).length;
+    if ((k === 'lota' && nC >= 3) || (k === 'monkey' && run.monkeyStage >= 1)) { roundWon(); return; }
+    g.over = true; paused = true;
+    const lines = {
+      rug: 'Time\'s up. Someone took her out into the garden and she did it there, by the bushes, like a good dog. Very disappointing.',
+      lota: `Only ${nC} of the cushions. You can turn them over and nobody notices. That's not misbehaving, that's furniture wear.`,
+      monkey: run.monkeyGrabbed ? 'She got him down but never really chewed. Not a crime. More of a cuddle.' : 'The monkey is still on the shelf, smiling. He has no idea.'
+    };
+    showMsg(`
+      <div class="hero"><svg class="face" viewBox="0 0 100 100"><use href="#poppyFace"/></svg></div>
+      <p class="sub">Round ${g.R.n} · ${g.R.name}</p>
+      <div class="stamp no">TOO GOOD</div>
+      <p>${lines[k]}</p>
+      <button class="btn" id="mBtn">Start again</button>`, () => { newRun(); showIntro(); });
+  }
+  function roundWon(){
+    if (g.over) return;
+    g.over = true; paused = true; SFX.win(); confetti(40);
+    const k = g.R.key;
+    if (g.hasMonkey && g.p.mode !== 'bed'){ /* keep him in her mouth for the finale */ }
+    const body = {
+      rug: `She went <b>${run.poopLabel}</b>. Nobody saw.`,
+      lota: `${run.cushions.filter(c => c.hp <= 0).length} of 5 cushions shredded. The living room looks like it snowed.`,
+      monkey: `The little green monkey: <b>${['whole','missing an ear','missing an ear and an arm','missing an ear, an arm and most of his stuffing','missing an ear, an arm, his stuffing and one eye'][run.monkeyStage]}</b>.`
+    }[k];
+    const isLast = run.round === 2;
+    setTimeout(() => showMsg(`
+      <div class="hero"><svg class="face" viewBox="0 0 100 100"><use href="#poppyFace"/></svg>${k === 'monkey' ? `<svg class="mk" viewBox="-40 -64 80 70">${monkeySVG(run.monkeyStage)}</svg>` : ''}</div>
+      <p class="sub">Round ${g.R.n} · ${g.R.name}</p>
+      <div class="stamp ok">UNSEEN</div>
+      <p>${body}</p>
+      <div class="tally"><span class="j">+${run.joy[k]} joy</span></div>
+      <button class="btn" id="mBtn">${isLast ? 'They\'re coming home' : 'Next: ' + ROUNDS[run.round + 1].name}</button>`,
+      () => { if (isLast) finale(); else { run.round++; showIntro(); } }), 500);
+  }
+
+  function showMsg(html, onBtn){
+    $('msgCard').innerHTML = html; $('msg').style.display = 'flex'; $('msg').scrollTop = 0;
+    $('mBtn').onclick = () => { $('msg').style.display = 'none'; onBtn(); };
+  }
+  function showIntro(){
+    paused = true;
+    const R = ROUNDS[run.round];
+    $('game').style.display = 'flex';
+    if (!g || g.R !== R || g.over){ startRound(); paused = true; }
+    showMsg(`
+      <p class="sub">Round ${R.n} of 3</p>
+      <h2>${R.name}</h2>
+      ${R.key === 'monkey' ? `<div class="hero"><svg class="mk" style="width:90px;height:110px;margin:0" viewBox="-40 -64 80 70">${monkeySVG(0)}</svg></div>` : ''}
+      <p>${R.intro}</p>
+      <p class="small">${R.how}</p>
+      <button class="btn" id="mBtn">Go</button>`, () => { paused = false; last = performance.now(); });
+  }
+
+  function confetti(n){
+    const cols = ['#ff7a59','#ffd43b','#4fae57','#4dabf7','#c98a45'];
+    for (let i = 0; i < n; i++){
+      const c = document.createElement('div'); c.className = 'confetti';
+      c.style.left = Math.random()*100 + 'vw'; c.style.background = cols[i % cols.length];
+      c.style.animationDuration = (1.8 + Math.random()*1.6) + 's'; c.style.animationDelay = Math.random()*.4 + 's';
+      document.body.appendChild(c); setTimeout(() => c.remove(), 4200);
+    }
+  }
+
+  // ---------- finale: the scale ----------
+  function crimes(){
+    const list = [];
+    list.push({icon:'poop', label:'the rug', joy: run.joy.rug, guilt: 30});
+    const nC = run.cushions.filter(c => c.hp <= 0).length;
+    list.push({icon:'cushion', label:'the LOTA', joy: run.joy.lota, guilt: 25 * nC, n: nC});
+    list.push({icon:'monkey', label:'the monkey', joy: run.joy.monkey, guilt: 30 + 60 * run.monkeyStage});
+    return list;
+  }
+  function iconSVG(kind, stage){
+    if (kind === 'poop') return `<use href="#poop" transform="scale(.3)"/>`;
+    if (kind === 'cushion') return `<use href="#cushionIcon" transform="translate(0 -14) scale(.62)"/>`;
+    return `<g transform="scale(.55)">${monkeySVG(stage)}</g>`;
+  }
+  function drawScale(J, G, items, angleOverride){
+    const a = angleOverride != null ? angleOverride : clamp((G - J) / 9, -16, 16);
+    const rad = a * Math.PI / 180, cx = 180, cy = 50, L = 118;
+    const lx = cx - L * Math.cos(rad), ly = cy - L * Math.sin(rad), rx = cx + L * Math.cos(rad), ry = cy + L * Math.sin(rad);
+    const pan = (x, y, col, stuff, word) => `
+      <path d="M${x} ${y} L${x-46} ${y+78} M${x} ${y} L${x+46} ${y+78}" stroke="#b9ae9b" stroke-width="2"/>
+      <g transform="translate(${x} ${y+78})">${stuff}</g>
+      <path d="M${x-56} ${y+78} Q ${x} ${y+104} ${x+56} ${y+78} Z" fill="${col}" stroke="#3f3a4a" stroke-width="3" stroke-linejoin="round"/>
+      <text x="${x}" y="${y+124}" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="600" font-size="15" fill="${col === '#ffb36b' ? '#d0631a' : '#4d5f88'}">${word}</text>`;
+    let joyStuff = '', guiltStuff = '';
+    items.forEach((it, i) => {
+      const dx = (i - (items.length - 1) / 2) * 32;
+      if (it.joy > 0) joyStuff += `<g transform="translate(${dx} -4)"><g class="fade">${iconSVG(it.icon, it.stage)}</g></g>`;
+      if (it.guilt > 0){
+        const w = 10 + Math.min(26, it.guilt / 7);
+        guiltStuff += `<g transform="translate(${dx} 0)"><g class="fade"><path d="M${-w/2} 0 L${-w/2+5} ${-w*.9} L${w/2-5} ${-w*.9} L${w/2} 0 Z" fill="#6b7fa8" stroke="#3f4d6e" stroke-width="2"/><circle cx="0" cy="${-w*.9-4}" r="4" fill="none" stroke="#3f4d6e" stroke-width="2.5"/><text x="0" y="${-w*.35}" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="${Math.max(8, w*.38)}" fill="#fff">${it.guilt}</text></g></g>`;
+      }
+    });
+    $('scaleSvg').innerHTML = `
+      <rect x="168" y="50" width="24" height="160" rx="6" fill="#c9a27a"/>
+      <path d="M130 214 h100" stroke="#8b5a2b" stroke-width="10" stroke-linecap="round"/>
+      <g style="transition:transform 1s">
+        ${pan(lx, ly, '#ffb36b', joyStuff, 'JOY')}
+        ${pan(rx, ry, '#9aa9cf', guiltStuff, 'GUILT')}
+        <path d="M${lx} ${ly} L${rx} ${ry}" stroke="#8b5a2b" stroke-width="9" stroke-linecap="round"/>
+      </g>
+      <circle cx="${cx}" cy="${cy}" r="9" fill="#ff7a59" stroke="#3f3a4a" stroke-width="3"/>
+      <path d="M${cx} ${cy-12} L${cx-7} ${cy-30} L${cx+7} ${cy-30} Z" fill="#3f3a4a" transform="rotate(${a} ${cx} ${cy})"/>`;
+    $('finJoy').textContent = `Joy ${Math.round(J)}`; $('finGuilt').textContent = `Guilt ${Math.round(G)}`;
+  }
+  function animateScale(from, to, items, ms, done){
+    const t0 = performance.now();
+    function step(now){
+      const k = clamp((now - t0) / ms, 0, 1), e = 1 - Math.pow(1 - k, 3);
+      drawScale(from.J + (to.J - from.J) * e, from.G + (to.G - from.G) * e, items);
+      if (k < 1) requestAnimationFrame(step); else if (done) done();
+    }
+    requestAnimationFrame(step);
+  }
+
+  function finale(){
+    $('game').style.display = 'none';
+    const fin = $('finale'); fin.style.display = 'flex'; fin.scrollTop = 0;
+    const cs = crimes(); cs[2].stage = run.monkeyStage;
+    $('finSub').textContent = 'The key turns in the door';
+    $('finTitle').textContent = 'When they come home';
+    $('finBody').innerHTML = `<p class="fade">They see the rug. They see the sofa. They see the snow of stuffing on the floor. They look at Poppy.</p>`;
+    drawScale(0, 0, []);
+    // the crimes go on the scale one by one
+    let J = 0, G = 0, shown = [];
+    const steps = cs.map(c => () => new Promise(res => {
+      shown = [...shown, c];
+      const from = {J, G}; J += c.joy; G += c.guilt;
+      animateScale(from, {J, G}, shown, 900, () => setTimeout(res, 450));
+      SFX.plop();
+    }));
+    let pr = new Promise(r => setTimeout(r, 900));
+    steps.forEach(s => pr = pr.then(s));
+    pr.then(() => offerChoice(cs, J, G));
+  }
+
+  function offerChoice(cs, J, G){
+    const st = run.monkeyStage;
+    const heavy = G > J;
+    $('finBody').innerHTML = `
+      <p class="fade">${heavy ? 'Poppy\'s heart is full. And heavier than it is full.' : 'Poppy\'s heart is full. But something sits on the other side of it.'} The monkey is still in her mouth, ${['still whole','missing an ear','missing an ear and an arm','leaking stuffing','looking at her with one eye'][st]}.</p>
+      <p class="fade"><b>What does she do?</b></p>
+      <div class="choices fade">
+        <button class="choice" data-c="back"><b>Bring him back</b>Carry the monkey over and lay him at their feet.</button>
+        <button class="choice" data-c="hide"><b>Hide him</b>Push him under what's left of the sofa. Maybe nobody will ask.</button>
+        <button class="choice" data-c="chew"><b>Keep chewing</b>He's hers now.</button>
+      </div>`;
+    document.querySelectorAll('.choice').forEach(b => b.onclick = () => resolve(cs, J, G, b.dataset.c));
+  }
+
+  function resolve(cs, J, G, choice){
+    const m = cs[2], baseMG = m.guilt, st = run.monkeyStage;
+    let J2 = J, G2 = G, title, text, face = 'poppyGuilty', monkeyArt, stamp;
+    if (choice === 'back'){
+      const newMG = Math.round(baseMG * .25); G2 = G - baseMG + newMG; m.guilt = newMG;
+      title = 'She brings him back';
+      text = `She walks over slowly, ears flat, tail low, and puts the monkey down at their feet. Then she sits and doesn't look at anyone.</p>
+        <p>That evening someone sits under the lamp with a needle and green wool. The monkey comes back a little crooked, ${st >= 4 ? 'with one red button eye, ' : ''}and goes back up on the shelf.</p>
+        <p>Poppy sleeps underneath it all night.`;
+      monkeyArt = monkeySVG(st, true); face = 'poppyFace'; stamp = 'FORGIVEN';
+    } else if (choice === 'hide'){
+      title = 'She hides him';
+      text = `The monkey goes under the sofa. Nobody asks. They are busy with the rug.</p>
+        <p>Poppy lies down in her bed and tries to sleep. Every few minutes she lifts her head and looks at the sofa.`;
+      monkeyArt = null; stamp = 'HEAVY';
+    } else {
+      const newMG = Math.round(baseMG * 1.5); G2 = G - baseMG + newMG; m.guilt = newMG; J2 = J + 40; run.joy.monkey += 40; m.joy += 40;
+      title = 'She keeps chewing';
+      text = `She chews, right there, while they watch. It tastes of the whole family. For a minute it's wonderful.</p>
+        <p>Then it isn't.`;
+      monkeyArt = monkeySVG(4); stamp = 'TOO MUCH';
+    }
+    const score = Math.round(J2 - G2);
+    animateScale({J, G}, {J: J2, G: G2}, cs, 1200);
+    let best = -1e9, isBest = false;
+    try { const b = localStorage.getItem('pm-best'); if (b !== null) best = +b; } catch(e){}
+    if (score > best){ isBest = best > -1e9; best = score; try { localStorage.setItem('pm-best', String(score)); } catch(e){} }
+    $('finSub').textContent = 'When they come home';
+    $('finTitle').textContent = title;
+    $('finBody').innerHTML = `
+      <div class="hero fade"><svg class="face" viewBox="0 0 100 100"><use href="#${face}"/></svg>${monkeyArt ? `<svg class="mk" viewBox="-40 -64 80 70">${monkeyArt}</svg>` : ''}</div>
+      <div class="stamp ${choice === 'back' ? 'ok' : 'no'}">${stamp}</div>
+      <p class="fade">${text}</p>
+      <p class="sub">Joy minus guilt</p>
+      <div class="bigscore">${score > 0 ? '+' : ''}${score}</div>
+      <p class="best ${isBest ? 'new' : ''}">${isBest ? 'New best' : 'Best: ' + (best > 0 ? '+' : '') + best}</p>
+      <p class="small fade">A good dog isn't one who never misbehaves.</p>
+      <button class="btn" id="againBtn">Be bad again</button>`;
+    if (choice === 'back') { SFX.win(); confetti(50); } else SFX.caught();
+    $('againBtn').onclick = () => { $('finale').style.display = 'none'; newRun(); g = null; showIntro(); };
+    showLandBest();
+  }
+
+  // ---------- chrome ----------
+  function showLandBest(){
+    try { const b = localStorage.getItem('pm-best'); $('landBest').textContent = b !== null ? `Best: ${+b > 0 ? '+' : ''}${b}` : ''; } catch(e){}
+  }
+  showLandBest();
+  $('startBtn').onclick = () => { ac(); $('landing').style.display = 'none'; newRun(); g = null; showIntro(); };
+  $('helpBtn1').onclick = () => { $('helpPanel').style.display = 'flex'; };
+  $('helpBtn2').onclick = () => { paused = true; $('helpPanel').style.display = 'flex'; };
+  $('helpClose').onclick = () => { $('helpPanel').style.display = 'none'; if (g && !g.over && $('msg').style.display === 'none' && $('landing').style.display === 'none') { paused = false; last = performance.now(); } };
+  $('soundBtn').onclick = () => { sound = !sound; try { localStorage.setItem('pm-sound', sound ? 'on' : 'off'); } catch(e){} $('soundBtn').textContent = 'Sound: ' + (sound ? 'on' : 'off'); };
+  $('soundBtn').textContent = 'Sound: ' + (sound ? 'on' : 'off');
+  $('restartBtn').onclick = () => { newRun(); g = null; showIntro(); };
+  document.addEventListener('visibilitychange', () => { if (document.hidden && g && !g.over && $('msg').style.display === 'none'){ paused = true; $('helpPanel').style.display = 'flex'; } });
+})();
+</script>
+</body>
+</html>
