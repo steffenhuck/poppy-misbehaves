@@ -99,7 +99,12 @@
   #status{width:100%; display:flex; align-items:center; gap:8px; padding:0 4px 8px; flex-wrap:wrap;}
   #goalTxt{font-family:'Fredoka',sans-serif; font-size:14px; font-weight:600; flex:1; min-width:150px;}
   #joyChip{color:#d0631a;}
-  #warnTag{font-family:'Fredoka',sans-serif; font-weight:600; font-size:13px; color:#fff; background:#c8312a; padding:4px 10px; border-radius:999px; white-space:nowrap; animation:throb .5s ease-in-out infinite alternate;}
+  #alarm{position:absolute; left:50%; top:10px; transform:translateX(-50%); background:#fff; border:3px solid #3f3a4a; border-radius:999px; padding:6px 16px; font-family:'Fredoka',sans-serif; font-weight:600; font-size:clamp(14px,4vw,19px); white-space:nowrap; box-shadow:0 6px 16px rgba(60,40,20,.2); pointer-events:none; display:none;}
+  #alarm.hot{background:#ffe3dc; border-color:#c8312a; color:#c8312a; animation:throbX .4s ease-in-out infinite alternate;}
+  #alarm.calm{background:#eef8ee; border-color:#4fae57; color:#2f8a3a;}
+  @keyframes throbX{from{transform:translateX(-50%) scale(1);} to{transform:translateX(-50%) scale(1.08);}}
+  .lvl.locked{opacity:.5; filter:grayscale(.85);}
+  .lvl.now{border-color:var(--accent); box-shadow:0 0 0 4px rgba(255,122,89,.15);}
   @keyframes throb{from{transform:scale(1);} to{transform:scale(1.07);}}
   #sceneWrap{position:relative; width:100%; border-radius:22px; overflow:hidden; box-shadow:0 10px 30px rgba(100,80,60,.18); background:#f6e7cf; touch-action:manipulation;}
   #scene{display:block; width:100%; height:auto; cursor:pointer;}
@@ -205,12 +210,12 @@
     </div>
     <h1>Poppy Misbehaves</h1>
     <p>Poppy is a good puppy. Mostly. Today she isn't.</p>
-    <p><b>You are Poppy.</b> One living room, three crimes. Nobody may catch you <b>in the act</b>.</p>
+    <p><b>You are Poppy.</b> They've gone out. Three days, one living room, three crimes. Do what you like. Just be back in your bed, looking innocent, when they come home.</p>
     <div class="levels">
-      <div class="lvl r1"><div class="badge">1</div><div><span class="name">The rug</span><span class="what">You need to go. Not outside. On the rug.</span></div></div>
-      <div class="lvl r2"><div class="badge">2</div><div><span class="name">The LOTA</span><span class="what">The Eileen Gray sofa has five cushions. Not for long.</span></div></div>
-      <div class="lvl r3"><div class="badge">3</div><div><span class="name">The monkey</span><span class="what">Up on the shelf sits the little green knitted monkey. Everybody loves him.</span></div></div>
-      <div class="lvl r4"><div class="badge">⚖</div><div><span class="name">When they come home</span><span class="what">Poppy weighs her joy against her guilt.</span></div></div>
+      <div class="lvl r1 now"><div class="badge">1</div><div><span class="name">The rug</span><span class="what">She needs to go. The garden door is shut.</span></div></div>
+      <div class="lvl r2 locked"><div class="badge">2</div><div><span class="name">The LOTA</span><span class="what">Next day. The Eileen Gray sofa has five cushions. Not for long.</span></div></div>
+      <div class="lvl r3 locked"><div class="badge">3</div><div><span class="name">The monkey</span><span class="what">The day after. Up on the shelf sits the little green knitted monkey. Everybody loves him.</span></div></div>
+      <div class="lvl r4 locked"><div class="badge">⚖</div><div><span class="name">When they come home</span><span class="what">Poppy weighs her joy against her guilt.</span></div></div>
     </div>
     <button class="btn" id="startBtn">Be bad</button><br>
     <button class="btn secondary small" id="helpBtn1">How to be bad</button>
@@ -227,13 +232,14 @@
     <h2>How to be bad</h2>
     <ul class="rules">
       <li><b>Tap anywhere</b> in the room and Poppy runs there. Arrow keys work too.</li>
-      <li><b>The big button</b> does the crime. Some crimes you hold (tugging, chewing), one you can't stop once it's started.</li>
-      <li><b>Listen for footsteps.</b> When someone comes in, they see everything in front of them (the yellow light). What happens behind their back stays behind their back.</li>
-      <li><b>Watch for the "?"</b> Then they're about to turn round.</li>
-      <li><b>Your bed is safe.</b> A puppy asleep in her bed is innocent. Tap <b>To bed</b> and she runs there.</li>
-      <li>Every crime brings <b>joy</b>. And something else, which you'll find out about at the end.</li>
+      <li><b>The big button</b> does the crime. Some crimes you hold (tugging, chewing). One you can't stop once it's started.</li>
+      <li><b>They're out.</b> Nobody sees what she does. But they come home at a moment you don't know.</li>
+      <li><b>Listen.</b> A car, then the gate, then the key in the door. Not every car stops, and not every gate is theirs.</li>
+      <li><b>When the door opens, be in your bed.</b> Asleep, of course. Tap <b>To bed</b> and she runs there.</li>
+      <li>Once she's done what she came to do, she can curl up and <b>wait for them</b>.</li>
+      <li>Every crime brings <b>joy</b>. And something else, which she'll find out about at the end.</li>
     </ul>
-    <p class="small">Three rounds of 90 seconds each, in order. Caught in the act means starting again from the rug.</p>
+    <p class="small">Three rounds, in order. Out of bed when the door opens means starting again from the rug.</p>
     <button class="btn" id="helpClose">Got it</button>
   </div></div>
 </div>
@@ -262,15 +268,15 @@
     <div class="title">Poppy Misbehaves<small id="roundName">Round 1 · The rug</small></div>
     <div style="display:flex; gap:6px">
       <div class="chip" id="joyChip">♥ <span id="joyNum">0</span></div>
-      <div class="chip" id="clockChip">⏱ <span id="clock">1:30</span></div>
+      <div class="chip" id="clockChip">🏠 alone <span id="clock">0:00</span></div>
     </div>
   </div>
   <div id="status">
     <span id="goalTxt"></span>
-    <span id="warnTag" style="display:none">👣 someone's coming</span>
   </div>
   <div id="sceneWrap">
     <svg id="scene" viewBox="0 0 800 420" aria-label="The living room"></svg>
+    <div id="alarm"></div>
   </div>
   <div id="meterWrap"><span id="meterLab"></span><div id="meter"><div id="meterFill"></div></div></div>
   <div id="controls">
@@ -295,26 +301,32 @@
 
   // ---------- constants ----------
   const GY = 392, GY_SOFA = 290, S = 0.7;
-  const BED_X = 92, DOOR_X = 745, VR = 350;
+  const BED_X = 92, GDOOR = 270;
   const SOFA = {x0: 300, x1: 640};           // LOTA incl. side boxes
   const RUG = {x0: 220, x1: 600, mx: 410};   // rug and its medallion centre
   const SHELF = {x0: 468, x1: 646, y: 150, mx: 592};
   const CLIMB = [360, 600], ON_SOFA = [370, 592], JUMP_OK = [500, 592];
 
   const ROUNDS = [
-    {key:'rug',    name:'The rug',    n:1, time:90, firstGap:6, gap:[6,10],  stay:[2.5,4.5], speed:115, turn:.30, warn:2.3,
-     goal:'Poop in the living room. Nobody may see.',
-     intro:'Poppy needs to go. Soon. The garden is <b>right there</b>. She won\'t go in the garden.',
-     how:'Wait until she really needs to go, then tap <b>Poop</b>. Once she\'s squatting she can\'t stop, so pick your moment. The <b>middle of the rug</b> gives the most joy.'},
-    {key:'lota',   name:'The LOTA',   n:2, time:90, firstGap:4, gap:[5,9],   stay:[2.5,4.5], speed:130, turn:.45, warn:1.9,
-     goal:'Shred at least 3 of the 5 cushions.',
-     intro:'The sofa is an Eileen Gray LOTA. Everyone tells everyone. It has five cushions.',
-     how:'Stand in front of the sofa and <b>hold</b> the button to tug. Let go when someone comes. All five gives extra joy.'},
-    {key:'monkey', name:'The monkey', n:3, time:90, firstGap:4, gap:[4.5,8], stay:[2.5,4.5], speed:140, turn:.55, warn:1.6,
-     goal:'Get the monkey off the shelf, then chew.',
-     intro:'On the shelf above the sofa sits the little green knitted monkey. He has been in this family longer than anyone.',
-     how:'Climb onto the sofa, move under the shelf and <b>jump</b> when the marker is in the green. Then <b>hold</b> to chew. Careful: with the monkey in your mouth, being <b>seen at all</b> means you\'re caught. Except in your bed.'}
+    {key:'rug', name:'The rug', n:1, arrive:[58,76], falses:2,
+     goal:'Poop in the living room. Be in bed when they come home.',
+     intro:'They\'ve gone out. Poppy is alone, and soon she will need to go. The garden door is shut.',
+     how:'Her need builds up. Once she <b>could go</b>, tap <b>Poop</b>: the middle of the rug gives the most joy. Before that she can <b>scratch at the garden door</b>. Nobody will come, but it counts for something later. And if she holds it too long, it just happens, wherever she is.'},
+    {key:'lota', name:'The LOTA', n:2, arrive:[52,72], falses:2,
+     goal:'Shred at least 3 of the 5 cushions. Be in bed when they come home.',
+     intro:'Next day. The rug is clean again. They\'ve gone out. The sofa is an Eileen Gray LOTA, everyone says so, and it has five cushions.',
+     how:'Stand in front of the sofa and <b>hold</b> the button to tug. Three cushions is enough. All five gives extra joy.'},
+    {key:'monkey', name:'The monkey', n:3, arrive:[60,80], falses:3,
+     goal:'Get the monkey off the shelf and chew. Be in bed when they come home.',
+     intro:'The day after. New cushions are on order. They\'ve gone out again. On the shelf above the sofa sits the little green knitted monkey. He has been in this family longer than anyone.',
+     how:'Climb onto the sofa, move under the shelf and <b>jump</b> when the marker is in the green. Then <b>hold</b> to chew. In her bed she can lie on him, so nobody sees him.'}
   ];
+  const STAGES = {
+    real: [['car', 1.5], ['gate', 1.3], ['key', 1.25], ['open', 0]],
+    past: [['car', 1.5], ['past', 1.4]],
+    next: [['car', 1.5], ['gate', 1.3], ['next', 1.4]]
+  };
+  const AL_TXT = {car:'🚗 A car…', past:'…it drives past', gate:'🚪 The gate!', next:'…it\'s next door', key:'🔑 The key in the door!'};
 
   // ---------- sound ----------
   let sound = true, AC = null;
@@ -345,7 +357,13 @@
     huh(){ tone(500, .12, 'triangle', .08, 760); },
     caught(){ tone(420, .25, 'sawtooth', .07, 210); tone(300, .45, 'sawtooth', .07, 150, .22); },
     win(){ [523,659,784,1046].forEach((f,i) => tone(f, .18, 'triangle', .09, null, i*.1)); },
-    plop(){ tone(160, .18, 'sine', .14, 60); }
+    plop(){ tone(160, .18, 'sine', .14, 60); },
+    car(){ tone(70, 1.2, 'sawtooth', .05, 120); },
+    past(){ tone(120, 1.1, 'sawtooth', .04, 55); },
+    gate(){ tone(320, .5, 'triangle', .07, 190); tone(260, .4, 'triangle', .05, 160, .25); },
+    next(){ tone(300, .3, 'sine', .05, 400); },
+    key(){ [1800, 2300, 1900, 2500].forEach((f, i) => tone(f, .06, 'square', .03, null, i * .09)); },
+    scratch(){ noise(.12, .08, 3000); }
   };
 
   // ---------- monkey ----------
@@ -420,29 +438,6 @@
     </g>`;
   }
 
-  // ---------- the human ----------
-  function humanSVG(){
-    return `
-    <g id="hm" style="display:none">
-      <path id="cone" d="" fill="rgba(255,222,90,.34)" stroke="rgba(235,180,30,.6)" stroke-width="2" stroke-dasharray="6 6"/>
-      <g id="hmFig">
-        <ellipse cx="0" cy="2" rx="34" ry="6" fill="rgba(40,25,10,.18)"/>
-        <g id="hmLegA"><rect x="-13" y="-88" width="12" height="86" rx="5" fill="#3d4a6b"/><ellipse cx="-4" cy="-2" rx="11" ry="5" fill="#2a2a2a"/></g>
-        <g id="hmLegB"><rect x="1" y="-88" width="12" height="86" rx="5" fill="#34405e"/><ellipse cx="10" cy="-2" rx="11" ry="5" fill="#2a2a2a"/></g>
-        <rect x="-23" y="-156" width="46" height="76" rx="16" fill="#e07a5f"/>
-        <rect x="-12" y="-130" width="30" height="50" rx="7" fill="#fffaf0" opacity=".95"/>
-        <g id="hmArm"><rect x="-6" y="-150" width="12" height="62" rx="6" fill="#c9634a"/><circle cx="0" cy="-88" r="7" fill="#8d5a3c"/></g>
-        <rect x="-5" y="-170" width="10" height="16" fill="#8d5a3c"/>
-        <circle cx="2" cy="-184" r="19" fill="#8d5a3c"/>
-        <path d="M-17 -186 C -18 -206, 18 -210, 20 -192 C 12 -198, -2 -199, -8 -190 C -10 -184, -14 -180, -17 -186 Z" fill="#2b1d14"/>
-        <circle cx="12" cy="-186" r="2.6" fill="#1d1612"/>
-        <circle cx="21" cy="-180" r="3.2" fill="#7a4a30"/>
-        <path d="M8 -173 Q 13 -170 17 -173" stroke="#3b2214" stroke-width="2" fill="none" stroke-linecap="round"/>
-      </g>
-      <g id="hmQ" style="display:none"><circle cx="0" cy="-232" r="20" fill="#fff" stroke="#3f3a4a" stroke-width="3"/><text x="0" y="-222" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="28" fill="#c8312a">?</text></g>
-    </g>`;
-  }
-
   // ---------- room ----------
   function roomBG(){
     let s = `
@@ -460,9 +455,17 @@
     <circle cx="150" cy="100" r="14" fill="#ffe27a"/>
     <rect x="112" y="70" width="6" height="140" fill="#fff"/><rect x="50" y="137" width="130" height="6" fill="#fff"/>
     <rect x="34" y="216" width="162" height="10" rx="3" fill="#e9dcc6"/>
+    <!-- garden door -->
+    <rect x="214" y="58" width="112" height="276" rx="4" fill="#fff"/>
+    <rect x="224" y="68" width="92" height="258" fill="url(#sky)"/>
+    <path d="M224 236 Q 250 214 282 226 Q 302 216 316 222 V326 H224 Z" fill="#7cc65a"/>
+    <circle cx="296" cy="214" r="18" fill="#5fae4a"/><rect x="294" y="226" width="4" height="16" fill="#8b5a2b"/>
+    <rect x="224" y="290" width="92" height="36" fill="#5fae4a"/>
+    <rect x="267" y="68" width="6" height="258" fill="#fff"/><rect x="224" y="188" width="92" height="5" fill="#fff"/>
+    <rect x="256" y="196" width="6" height="18" rx="3" fill="#3f3a4a"/>
     <!-- picture -->
-    <rect x="236" y="70" width="110" height="80" rx="3" fill="#fff" stroke="#3f3a4a" stroke-width="4"/>
-    <rect x="248" y="82" width="40" height="56" fill="#ff7a59"/><rect x="296" y="82" width="38" height="26" fill="#ffd43b"/><rect x="296" y="114" width="38" height="24" fill="#4dabf7"/>
+    <rect x="352" y="76" width="92" height="66" rx="3" fill="#fff" stroke="#3f3a4a" stroke-width="4"/>
+    <rect x="362" y="86" width="34" height="46" fill="#ff7a59"/><rect x="402" y="86" width="32" height="20" fill="#ffd43b"/><rect x="402" y="112" width="32" height="20" fill="#4dabf7"/>
     <!-- doorway -->
     <rect x="700" y="118" width="92" height="214" fill="url(#hall)"/>
     <rect x="694" y="112" width="104" height="10" rx="3" fill="#fff"/>
@@ -543,33 +546,40 @@
   }
 
   function buildScene(){
-    scene.innerHTML = `<g id="bg">${roomBG()}</g><g id="ev"></g>${humanSVG()}${poppySVG()}
+    scene.innerHTML = `<g id="bg">${roomBG()}</g><g id="ev"></g>${poppySVG()}
       <g id="jumpBar" style="display:none"><rect x="-50" y="0" width="100" height="12" rx="6" fill="#fff" stroke="#3f3a4a" stroke-width="2.5"/><rect id="jbZone" x="0" y="2" width="20" height="8" rx="3" fill="#69db7c"/><rect id="jbMark" x="-2" y="-4" width="5" height="20" rx="2" fill="#3f3a4a"/></g>
       <g id="pb" style="display:none"><rect id="pbRect" x="-50" y="-22" width="100" height="34" rx="16" fill="#fff" stroke="#3f3a4a" stroke-width="2.5"/><text id="pbText" x="0" y="1" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="600" font-size="19" fill="#3f3a4a"></text></g>
-      <g id="steps" style="display:none" font-size="26"><text x="${DOOR_X-26}" y="318">🐾</text><text x="${DOOR_X+4}" y="300">👣</text></g>
       <g id="floats"></g>`;
     P = {};
-    ['pp','ppLift','ppHead','ppTail','ppLegs','legF1','legF2','legB1','legB2','ppEye','ppEyeShut','ppMonkey','ppShadow','hm','hmFig','hmLegA','hmLegB','hmArm','hmQ','cone','ev','pb','pbRect','pbText','steps','floats','jumpBar','jbZone','jbMark'].forEach(id => P[id] = document.getElementById(id));
+    ['pp','ppLift','ppHead','ppTail','ppLegs','legF1','legF2','legB1','legB2','ppEye','ppEyeShut','ppMonkey','ppShadow','ev','pb','pbRect','pbText','floats','jumpBar','jbZone','jbMark'].forEach(id => P[id] = document.getElementById(id));
   }
   let P = {};
 
   function drawEvidence(){
     let s = sofaSVG(run.cushions);
     if (run.round === 2 && !run.monkeyGrabbed) s += `<g transform="translate(${SHELF.mx} ${SHELF.y}) scale(.95)">${monkeySVG(0)}</g>`;
-    if (run.poopX != null) s += `<use href="#poop" transform="translate(${run.poopX} ${GY+6}) scale(.36)"/>`;
+    if (run.poopX != null && run.round === 0) s += `<use href="#poop" transform="translate(${run.poopX} ${GY+6}) scale(.36)"/>`;
     for (const p of run.puffs) s += `<use href="#puff" transform="translate(${p.x.toFixed(0)} ${p.y.toFixed(0)}) scale(${p.s.toFixed(2)})"/>`;
     if (g && g.monkeyDropped) s += `<g transform="translate(${g.monkeyDropped} ${GY+4}) scale(.8)">${monkeySVG(run.monkeyStage)}</g>`;
     P.ev.innerHTML = s;
   }
 
+  function schedule(R){
+    const T = rnd(R.arrive[0], R.arrive[1]), list = [{t: T, type: 'real'}];
+    const a = 14, span = T - 9 - a;
+    for (let k = 0; k < R.falses; k++) list.push({t: a + span * (k + .5) / R.falses + rnd(-2.5, 2.5), type: Math.random() < .5 ? 'past' : 'next'});
+    return list.sort((x, y) => x.t - y.t);
+  }
   function startRound(){
     const R = ROUNDS[run.round];
+    if (run.round === 2) run.puffs = [];
     g = {
-      R, time: R.time, joy: 0, over: false,
+      R, elapsed: 0, joy: 0, over: false,
       p: {x: BED_X, y: GY, dir: 1, mode: 'bed', tx: null, speed: 230, onSofa: false, hop: null, jump: null, actUntil: 0, walkPhase: 0},
-      h: {state: 'away', x: 860, dir: -1, timer: R.firstGap, target: 400, turnPlanned: false, turnAt: 0, phase: 0},
-      urge: 0, squat: 0, chewP: 0, tugTarget: -1, poopDone: false, endAt: null, monkeyDropped: null, hasMonkey: false, bubble: null, bubbleUntil: 0
+      need: 0, squat: 0, scratchT: 0, chewP: 0, poopDone: false, hasMonkey: false, bubble: null, bubbleUntil: 0,
+      alarms: schedule(R), alarm: null
     };
+    showAlarm(null);
     buildScene(); drawEvidence();
     $('roundName').textContent = `Round ${R.n} · ${R.name}`;
     $('goalTxt').innerHTML = R.goal;
@@ -598,9 +608,14 @@
     for (let i = 0; i < n; i++) run.puffs.push({x: clamp(x + rnd(-70, 70), 20, 780), y: rnd(yTop, GY + 18), s: rnd(.6, 1.1)});
     if (run.puffs.length > 60) run.puffs.splice(0, run.puffs.length - 60);
   }
-  function humanIn(){ return ['walk','look','turnwarn','leave'].includes(g.h.state) && g.h.x < 800; }
-  function inCone(x){ const h = g.h; return h.dir < 0 ? (x <= h.x + 10 && x >= h.x - VR) : (x >= h.x - 10 && x <= h.x + VR); }
-  function acting(){ return tt < g.p.actUntil || ['squat','jump','climb'].includes(g.p.mode); }
+  function goalDone(){
+    const k = g.R.key;
+    if (k === 'rug') return g.poopDone;
+    if (k === 'lota') return run.cushions.filter(c => c.hp <= 0).length >= 3;
+    return run.monkeyStage >= 1;
+  }
+  function stageName(){ return g.alarm ? STAGES[g.alarm.type][g.alarm.i][0] : null; }
+  const BUSY = ['squat','jump','climb','scratch'];
 
   // ---------- input ----------
   function svgX(ev){
@@ -637,6 +652,8 @@
     if (a.kind === 'poop') startSquat();
     if (a.kind === 'climb') startClimb();
     if (a.kind === 'jump') startJump();
+    if (a.kind === 'scratch') startScratch();
+    if (a.kind === 'wait'){ g.alarms = [{t: g.elapsed + .3, type: 'real'}]; say('z z z', 2); }
   }
   function actUp(){ actHeld = false; actBtn.classList.remove('held'); }
   actBtn.addEventListener('pointerdown', e => { e.preventDefault(); actDown(); });
@@ -657,13 +674,17 @@
     return best;
   }
   function currentAction(){
-    const p = g.p, k = g.R.key, busy = ['squat','jump','climb'].includes(p.mode);
+    const p = g.p, k = g.R.key, busy = BUSY.includes(p.mode);
     if (busy) return {ok:false, label:'…', sub:'busy'};
+    if (k === 'monkey' && g.hasMonkey && run.monkeyStage < 4) return {ok:true, kind:'chew', label:'Chew', sub:'hold'};
+    if (goalDone() && p.mode === 'bed' && !g.alarm) return {ok:true, kind:'wait', label:'Wait for them', sub:'curl up and sleep'};
+    if (goalDone() && p.mode === 'bed') return {ok:false, label:'Asleep', sub:'of course'};
     if (k === 'rug'){
-      if (g.poopDone) return {ok:false, label:'Done', sub:'phew'};
-      if (g.urge < 1) return {ok:false, label:'Poop', sub:'not yet', why:'not yet…'};
+      if (g.poopDone) return {ok:false, label:'Done', sub:'now get to bed'};
+      if (!p.onSofa && Math.abs(p.x - GDOOR) < 50 && p.mode !== 'bed') return {ok:true, kind:'scratch', label:'Scratch', sub: run.scratched ? 'nobody comes' : 'at the garden door'};
+      if (g.need < .4) return {ok:false, label:'Poop', sub:'she doesn\'t need to yet', why:'not yet…'};
       if (p.mode === 'bed') return {ok:false, label:'Poop', sub:'not in her own bed', why:'not in MY bed!'};
-      return {ok:true, kind:'poop', label:'Poop', sub:'can\'t stop once started', hot:true};
+      return {ok:true, kind:'poop', label:'Poop', sub:'can\'t stop once started', hot: g.need > .8};
     }
     if (k === 'lota'){
       if (p.x < SOFA.x0 + 40 || p.x > SOFA.x1 - 30 || p.onSofa) return {ok:false, label:'Tug', sub:'go to the sofa', why:'where\'s the sofa?'};
@@ -671,8 +692,7 @@
       return {ok:true, kind:'tug', label:'Tug', sub:'hold'};
     }
     // monkey
-    if (g.hasMonkey) return {ok:true, kind:'chew', label:'Chew', sub:'hold'};
-    if (run.monkeyGrabbed) return {ok:false, label:'Chew', sub:'pick him up'};
+    if (run.monkeyGrabbed) return {ok:false, label:'Chew', sub:'nothing left'};
     if (!p.onSofa){
       if (p.x >= CLIMB[0] && p.x <= CLIMB[1] && p.mode !== 'bed') return {ok:true, kind:'climb', label:'Climb', sub:'onto the sofa'};
       return {ok:false, label:'Climb', sub:'go to the sofa', why:'up there…'};
@@ -683,16 +703,16 @@
 
   // ---------- crimes ----------
   function startSquat(){ const p = g.p; p.mode = 'squat'; g.squat = 0; p.tx = null; SFX.plop(); }
+  function startScratch(){ const p = g.p; p.mode = 'scratch'; g.scratchT = 0; p.tx = null; p.dir = p.x > GDOOR ? -1 : 1; }
   function finishPoop(){
-    const x = g.p.x; run.poopX = x - g.p.dir * 30;
+    run.poopX = g.p.x - g.p.dir * 30;
     let j, l;
-    if (Math.abs(run.poopX - RUG.mx) < 62){ j = 100; l = 'right on the medallion'; }
+    if (Math.abs(run.poopX - BED_X) < 60){ j = 5; l = 'in her own bed. ugh'; }
+    else if (Math.abs(run.poopX - RUG.mx) < 62){ j = 100; l = 'right on the medallion'; }
     else if (run.poopX > RUG.x0 && run.poopX < RUG.x1){ j = 60; l = 'on the rug'; }
-    else if (run.poopX > BED_X + 70 || run.poopX < BED_X - 70){ j = 25; l = 'on the parquet. meh'; }
-    else { j = 25; l = 'next to her bed. meh'; }
-    run.poopJoy = j; run.poopLabel = l; g.poopDone = true; g.p.mode = 'idle';
+    else { j = 25; l = 'on the parquet. meh'; }
+    run.poopJoy = j; run.poopLabel = l; g.poopDone = true; g.p.mode = Math.abs(g.p.x - BED_X) < 30 ? 'bed' : 'idle';
     drawEvidence(); addJoy(j, l);
-    g.endAt = tt + 1.6;
   }
   function startClimb(){ const p = g.p; p.mode = 'climb'; p.tx = null; p.hop = {from: GY, to: GY_SOFA, t: 0, dur: .45, arc: 40}; p.onSofa = true; SFX.boing(); }
   function jumpZone(){ return [.62, .8]; }
@@ -721,13 +741,11 @@
   }
 
   function update(dt){
-    const p = g.p, R = g.R, h = g.h;
-    if (!g.over){
-      g.time -= dt;
-      if (g.time <= 0){ g.time = 0; timeUp(); return; }
-    }
+    const p = g.p, R = g.R;
+    if (g.over) return;
+    g.elapsed += dt;
     // keyboard steering
-    if (!['squat','jump','climb'].includes(p.mode) && (keys.ArrowLeft || keys.ArrowRight)){
+    if (!BUSY.includes(p.mode) && (keys.ArrowLeft || keys.ArrowRight)){
       if (p.onSofa && (p.x <= ON_SOFA[0] && keys.ArrowLeft || p.x >= ON_SOFA[1] && keys.ArrowRight)) hopDown();
       const d = keys.ArrowLeft ? -1 : 1;
       p.tx = clamp(p.x + d * 40, p.onSofa ? ON_SOFA[0] : 50, p.onSofa ? ON_SOFA[1] : 770); p.mode = 'walk'; p.speed = 230;
@@ -759,13 +777,24 @@
         else if (j.res === 'high'){ SFX.bonk(); say('BONK', 1); }
         else say('too low', 1);
       }
-      if (k >= 1){ p.mode = 'idle'; p.jump = null; p.actUntil = tt + .25; }
+      if (k >= 1){ p.mode = 'idle'; p.jump = null; }
     }
     // round-specific
     if (R.key === 'rug'){
-      if (!g.poopDone && g.urge < 1){
-        g.urge = clamp(g.urge + dt / 13, 0, 1);
-        if (g.urge >= 1){ say('need to GO!', 2); SFX.huh(); }
+      if (p.mode === 'scratch'){
+        g.scratchT += dt;
+        if (Math.random() < dt * 8) SFX.scratch();
+        if (g.scratchT >= 1.8){
+          p.mode = 'idle';
+          if (!run.scratched){ run.scratched = true; floatText('she tried', p.x, p.y - 120, '#2f8a3a'); }
+          say('nobody comes…', 1.8);
+        }
+      }
+      if (!g.poopDone && p.mode !== 'squat'){
+        const before = g.need; g.need = clamp(g.need + dt / 40, 0, 1);
+        if (before < .4 && g.need >= .4){ say('need to go…', 1.8); SFX.huh(); }
+        if (before < .8 && g.need >= .8){ say('NEED TO GO!', 1.8); SFX.huh(); }
+        if (g.need >= 1 && !BUSY.includes(p.mode)){ if (p.onSofa) hopDown(); say('oops…', 1.6); startSquat(); }
       }
       if (p.mode === 'squat'){
         g.squat += dt;
@@ -776,7 +805,7 @@
       const a = currentAction();
       if (actHeld && a.ok && a.kind === 'tug' && p.mode !== 'walk'){
         const i = nearestCushion(), c = run.cushions[i];
-        p.mode = 'tug'; p.dir = 1; p.actUntil = tt + .25;
+        p.mode = 'tug'; p.dir = 1;
         const before = c.hp; c.hp = clamp(c.hp - dt / 2.4, 0, 1);
         if ((before >= .7 && c.hp < .7) || (before >= .4 && c.hp < .4)) { SFX.tear(); drawEvidence(); }
         if (Math.random() < dt * 9) SFX.chew();
@@ -784,16 +813,13 @@
           SFX.tear(); spawnPuffs(c.x + c.w / 2, 7, 360); drawEvidence();
           const left = run.cushions.filter(q => q.hp > 0).length;
           addJoy(40, left === 0 ? 'SNOW!' : 'rrrrip!');
-          if (left === 0){
-            g.endAt = tt + 2;
-            setTimeout(() => { if (g && g.R.key === 'lota'){ g.joy += 40; run.joy.lota += 40; updateJoy(); floatText('+40 ♥', g.p.x, g.p.y - 150, '#ff8a2e'); say('all five!', 1.4); SFX.joy(); } }, 650);
-          }
+          if (left === 0) setTimeout(() => { if (g && g.R.key === 'lota' && !g.over){ g.joy += 40; run.joy.lota += 40; updateJoy(); floatText('+40 ♥', g.p.x, g.p.y - 150, '#ff8a2e'); say('all five!', 1.4); SFX.joy(); } }, 650);
         }
       } else if (p.mode === 'tug') p.mode = 'idle';
     }
     if (R.key === 'monkey'){
       if (actHeld && g.hasMonkey && p.mode !== 'walk' && p.mode !== 'jump' && run.monkeyStage < 4){
-        p.mode = p.mode === 'bed' ? 'bedchew' : 'chew'; p.actUntil = tt + .25;
+        p.mode = p.mode === 'bed' || p.mode === 'bedchew' ? 'bedchew' : 'chew';
         g.chewP += dt;
         if (Math.random() < dt * 7) SFX.chew();
         if (g.chewP >= 2.2){
@@ -801,71 +827,50 @@
           spawnPuffs(p.x + p.dir * 50, run.monkeyStage === 3 ? 6 : 2, p.onSofa ? 330 : GY - 6); drawEvidence(); SFX.tear();
           const lines = ['', 'an ear!', 'an arm…', 'his stuffing!', 'his eye.'];
           addJoy(40, lines[run.monkeyStage]);
-          if (run.monkeyStage >= 4){ g.endAt = tt + 2; }
         }
       } else if (p.mode === 'chew') p.mode = 'idle';
       else if (p.mode === 'bedchew') p.mode = 'bed';
     }
-    // human
-    updateHuman(dt);
-    // caught?
-    if (!g.over && humanIn() && inCone(p.x)){
-      const holding = R.key === 'monkey' && g.hasMonkey && p.mode !== 'bed';
-      if (acting() || holding) caught(holding && !acting() ? 'holding' : 'act');
+    // are they coming home?
+    if (!g.alarm && g.alarms.length && g.elapsed >= g.alarms[0].t){
+      const a = g.alarms.shift(); g.alarm = {type: a.type, i: 0, t: 0}; alarmStage();
     }
-    if (g.endAt && tt >= g.endAt && !g.over) roundWon();
+    if (g.alarm){
+      g.alarm.t += dt;
+      const st = STAGES[g.alarm.type][g.alarm.i];
+      if (st[0] === 'open'){ doorOpens(); return; }
+      if (g.alarm.t >= st[1]){
+        g.alarm.i++; g.alarm.t = 0;
+        if (g.alarm.i >= STAGES[g.alarm.type].length){ g.alarm = null; showAlarm(null); }
+        else alarmStage();
+      }
+    }
   }
 
-  function updateHuman(dt){
-    const h = g.h, R = g.R;
-    h.phase += dt;
-    switch (h.state){
-      case 'away':
-        h.timer -= dt;
-        if (h.timer <= R.warn){ h.state = 'warn'; }
-        break;
-      case 'warn':
-        h.timer -= dt;
-        if (Math.floor((h.timer) * 3) !== Math.floor((h.timer + dt) * 3)) SFX.step();
-        if (h.timer <= 0){
-          h.state = 'walk'; h.x = 830; h.dir = -1;
-          h.target = rnd(160, 660);
-          h.turnPlanned = Math.random() < R.turn;
-        }
-        break;
-      case 'walk': {
-        const d = h.target - h.x;
-        if (Math.abs(d) < 3){ h.state = 'look'; h.timer = rnd(R.stay[0], R.stay[1]); h.turnAt = h.timer * rnd(.35, .6); }
-        else { h.dir = Math.sign(d); h.x += Math.sign(d) * Math.min(Math.abs(d), R.speed * dt); }
-        if (Math.floor(h.phase * 2.5) !== Math.floor((h.phase - dt) * 2.5)) SFX.step();
-        break;
-      }
-      case 'look':
-        h.timer -= dt;
-        if (h.turnPlanned && h.timer <= h.turnAt){ h.turnPlanned = false; h.state = 'turnwarn'; h.qt = .75; SFX.huh(); }
-        else if (h.timer <= 0){ h.state = 'leave'; h.dir = 1; }
-        break;
-      case 'turnwarn':
-        h.qt -= dt; h.timer -= dt;
-        if (h.qt <= 0){ h.dir = -h.dir; h.state = 'look'; h.timer = Math.max(h.timer, 1.4); }
-        break;
-      case 'leave':
-        h.dir = 1; h.x += R.speed * dt;
-        if (Math.floor(h.phase * 2.5) !== Math.floor((h.phase - dt) * 2.5)) SFX.step();
-        if (h.x > 840){ h.state = 'away'; h.timer = rnd(R.gap[0], R.gap[1]) + R.warn; }
-        break;
-    }
+  function showAlarm(txt, cls){
+    const el = $('alarm');
+    if (!txt){ el.style.display = 'none'; return; }
+    el.textContent = txt; el.className = cls || ''; el.style.display = 'block';
+  }
+  function alarmStage(){
+    const name = stageName();
+    if (name === 'open') return;
+    const calm = name === 'past' || name === 'next';
+    showAlarm(AL_TXT[name], calm ? 'calm' : 'hot');
+    if (SFX[name]) SFX[name]();
   }
 
   // ---------- render ----------
   function render(dt){
-    const p = g.p, h = g.h, m = p.mode;
+    const p = g.p, m = p.mode, sn = stageName(), listening = sn === 'car' || sn === 'gate' || sn === 'key';
     // Poppy pose
     const moving = m === 'walk' && p.tx != null;
     let lift = 0, bodyRot = 0, headRot = Math.sin(tt*2)*2, legA = moving ? Math.sin(p.walkPhase)*24 : 0;
     let backFold = 0, tailRot = Math.sin(tt*5)*10, legsOn = true, eyesShut = false;
     if (moving && p.speed > 260) lift = -Math.abs(Math.sin(p.walkPhase))*6;
-    if (g.R.key === 'rug' && g.urge >= 1 && !g.poopDone && (m === 'idle' || m === 'walk')){ headRot = 22 + Math.sin(tt*14)*5; }
+    if (g.R.key === 'rug' && g.need >= .4 && !g.poopDone && (m === 'idle' || m === 'walk')){ headRot = 22 + Math.sin(tt*14)*5; }
+    if (listening && (m === 'idle' || m === 'walk')) headRot = -14;
+    if (m === 'scratch'){ bodyRot = -30; lift = -10; headRot = -10; legA = Math.sin(tt*28)*30; tailRot = Math.sin(tt*20)*20; }
     if (m === 'squat'){ bodyRot = -16; backFold = 1; tailRot = -28; headRot = -6; legA = 0; }
     if (m === 'bed' || m === 'bedchew'){ lift = 22; legsOn = false; eyesShut = m === 'bed'; headRot = m === 'bed' ? 20 : 26 + Math.sin(tt*20)*6; tailRot = 14; }
     if (m === 'tug'){ bodyRot = 8; headRot = 30 + Math.sin(tt*26)*14; tailRot = Math.sin(tt*30)*26; lift = Math.sin(tt*13)*2; }
@@ -892,8 +897,10 @@
       if (m === 'squat') txt = 'nngh…';
       else if (m === 'tug') txt = 'grrrr!';
       else if (m === 'chew' || m === 'bedchew') txt = 'nom nom nom';
-      else if (m === 'bed' && humanIn()) txt = 'z z z';
-      else if (g.R.key === 'rug' && g.urge >= 1 && !g.poopDone && m !== 'bed') txt = 'sniff sniff';
+      else if (m === 'scratch') txt = 'scratch scratch';
+      else if (listening && m !== 'bed') txt = '!';
+      else if (m === 'bed' && sn) txt = 'z z z';
+      else if (g.R.key === 'rug' && g.need >= .8 && !g.poopDone && m !== 'bed') txt = 'sniff sniff';
     }
     if (txt){
       P.pbText.textContent = txt;
@@ -914,25 +921,6 @@
       P.jbMark.setAttribute('x', -50 + jumpMeter()*100 - 2.5);
     }
 
-    // human
-    const vis = ['walk','look','turnwarn','leave'].includes(h.state);
-    P.hm.style.display = vis ? '' : 'none';
-    if (vis){
-      P.hmFig.setAttribute('transform', `translate(${h.x.toFixed(1)},${GY}) scale(${h.dir},1)`);
-      const walking = h.state === 'walk' || h.state === 'leave';
-      const la = walking ? Math.sin(h.phase * 9) * 18 : 0;
-      P.hmLegA.setAttribute('transform', `rotate(${la.toFixed(1)} -7 -88)`);
-      P.hmLegB.setAttribute('transform', `rotate(${(-la).toFixed(1)} 7 -88)`);
-      P.hmArm.setAttribute('transform', `rotate(${(-la*.8).toFixed(1)} 0 -146)`);
-      const ex = h.x + h.dir * 12, ey = GY - 186, far = h.x + h.dir * VR;
-      P.cone.setAttribute('d', `M${ex} ${ey} L${far} ${ey - 70} L${far} ${GY + 26} L${h.x} ${GY + 26} Z`);
-      P.hmQ.style.display = h.state === 'turnwarn' ? '' : 'none';
-      P.hmQ.setAttribute('transform', `translate(${h.x},${GY})`);
-    }
-    P.steps.style.display = h.state === 'warn' ? '' : 'none';
-    if (h.state === 'warn') P.steps.setAttribute('opacity', (.5 + .5*Math.sin(tt*14)).toFixed(2));
-    $('warnTag').style.display = h.state === 'warn' ? '' : 'none';
-
     // floats
     for (const e of [...P.floats.children]){
       const age = tt - e._t0;
@@ -941,74 +929,77 @@
     }
 
     // HUD
-    const s = Math.ceil(g.time);
+    const s = Math.floor(g.elapsed);
     $('clock').textContent = `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;
-    $('clockChip').classList.toggle('low', g.time < 15);
     const a = currentAction();
     $('actTxt').textContent = a.label; $('actSub').textContent = a.sub || '';
     actBtn.classList.toggle('off', !a.ok); actBtn.classList.toggle('hot', !!a.hot);
     // meter
     const R = g.R; let lab = '', val = 0;
-    if (R.key === 'rug'){ lab = g.poopDone ? 'Done' : g.urge >= 1 ? 'Needs to go: NOW' : 'Needs to go'; val = g.poopDone ? 1 : m === 'squat' ? g.squat / 3 : g.urge; }
+    if (R.key === 'rug'){ lab = g.poopDone ? 'Done' : m === 'squat' ? 'Going…' : g.need >= .8 ? 'Needs to go: NOW' : g.need >= .4 ? 'Needs to go: could go' : 'Needs to go: not yet'; val = g.poopDone ? 1 : g.need; }
     if (R.key === 'lota'){ const n = run.cushions.filter(c => c.hp <= 0).length; lab = `Cushions ${n} / 5`; const i = nearestCushion(); val = n / 5 + (i >= 0 && m === 'tug' ? (1 - run.cushions[i].hp) / 5 : 0); }
     if (R.key === 'monkey'){ lab = !run.monkeyGrabbed ? 'Monkey: on the shelf' : `Monkey: ${['whole','one ear','one arm','stuffing out','one eye'][run.monkeyStage]}`; val = run.monkeyStage / 4 + (g.hasMonkey && run.monkeyStage < 4 ? g.chewP / 2.2 / 4 : 0); }
     $('meterLab').textContent = lab; $('meterFill').style.width = (clamp(val, 0, 1) * 100).toFixed(1) + '%';
   }
 
   // ---------- outcomes ----------
-  function caught(kind){
+  function doorOpens(){
+    showAlarm('🚪 The door opens', 'hot');
+    if (!goalDone()) tooGood();
+    else if (g.p.mode !== 'bed') caught();
+    else roundWon();
+  }
+  function caught(){
     g.over = true; g.caughtFlag = true; SFX.caught();
     $('sceneWrap').classList.remove('shake'); void $('sceneWrap').offsetWidth; $('sceneWrap').classList.add('shake');
-    g.p.mode = g.p.mode === 'bedchew' ? 'bed' : 'idle'; g.p.tx = null;
-    g.h.state = 'look'; g.h.timer = 99; g.h.turnPlanned = false;
-    const lines = {
-      rug: 'Caught squatting on the rug. She is carried outside, mid-business, and finishes in the garden. Where she is supposed to.',
-      lota: 'Caught with a mouthful of LOTA. The sofa is out of bounds now. Forever. Or until tomorrow.',
-      monkey: kind === 'holding' ? 'Caught with the monkey in her mouth. He is taken back up to the shelf, a little damp, and the shelf is moved higher.' : 'Caught in the act. The monkey is rescued and goes back up, out of reach.'
-    };
+    const m = g.p.mode, k = g.R.key;
+    g.p.mode = m === 'bedchew' ? 'bed' : 'idle'; g.p.tx = null;
+    let line;
+    if (m === 'squat') line = 'The door opens and there she is, mid-business on the living room floor. Nobody needs to ask.';
+    else if (m === 'bedchew') line = 'The door opens and she is in her bed, all right. Chewing the monkey.';
+    else if (k === 'monkey' && g.hasMonkey) line = 'The door opens and she is standing there with the monkey in her mouth.';
+    else if (k === 'lota') line = 'The door opens and she is standing in a cloud of stuffing, tail going like mad. Nobody needs to ask.';
+    else line = 'The door opens and she is not in her bed. She is standing right next to it all, looking pleased with herself.';
     setTimeout(() => showMsg(`
       <div class="hero"><svg class="face" viewBox="0 0 100 100"><use href="#poppyGuilty"/></svg></div>
       <p class="sub">Round ${g.R.n} · ${g.R.name}</p>
       <div class="stamp no">CAUGHT</div>
-      <p>${lines[g.R.key]}</p>
-      <p class="small">Mischief has to start again from the rug.</p>
+      <p>${line}</p>
+      <p class="small">Mischief starts again from the rug.</p>
       <button class="btn" id="mBtn">Start again</button>`, () => { newRun(); showIntro(); }), 1200);
   }
-  function timeUp(){
-    if (g.over) return;
+  function tooGood(){
+    g.over = true;
     const k = g.R.key, nC = run.cushions.filter(c => c.hp <= 0).length;
-    if ((k === 'lota' && nC >= 3) || (k === 'monkey' && run.monkeyStage >= 1)) { roundWon(); return; }
-    g.over = true; paused = true;
     const lines = {
-      rug: 'Time\'s up. Someone took her out into the garden and she did it there, by the bushes, like a good dog. Very disappointing.',
-      lota: `Only ${nC} of the cushions. You can turn them over and nobody notices. That's not misbehaving, that's furniture wear.`,
+      rug: 'They\'re home, and she held it all afternoon. They take her straight into the garden and she goes by the bushes, like a good dog. Very disappointing.',
+      lota: nC ? `Only ${nC} ${nC === 1 ? 'cushion' : 'cushions'}. You can turn ${nC === 1 ? 'it' : 'them'} over and nobody notices. That isn't misbehaving, that's wear and tear.` : 'Not a single cushion. She spent the afternoon asleep. Good dog.',
       monkey: run.monkeyGrabbed ? 'She got him down but never really chewed. Not a crime. More of a cuddle.' : 'The monkey is still on the shelf, smiling. He has no idea.'
     };
-    showMsg(`
+    setTimeout(() => showMsg(`
       <div class="hero"><svg class="face" viewBox="0 0 100 100"><use href="#poppyFace"/></svg></div>
       <p class="sub">Round ${g.R.n} · ${g.R.name}</p>
       <div class="stamp no">TOO GOOD</div>
       <p>${lines[k]}</p>
-      <button class="btn" id="mBtn">Start again</button>`, () => { newRun(); showIntro(); });
+      <button class="btn" id="mBtn">Start again</button>`, () => { newRun(); showIntro(); }), 900);
   }
   function roundWon(){
     if (g.over) return;
     g.over = true; paused = true; SFX.win(); confetti(40);
     const k = g.R.key;
-    if (g.hasMonkey && g.p.mode !== 'bed'){ /* keep him in her mouth for the finale */ }
     const body = {
-      rug: `She went <b>${run.poopLabel}</b>. Nobody saw.`,
-      lota: `${run.cushions.filter(c => c.hp <= 0).length} of 5 cushions shredded. The living room looks like it snowed.`,
-      monkey: `The little green monkey: <b>${['whole','missing an ear','missing an ear and an arm','missing an ear, an arm and most of his stuffing','missing an ear, an arm, his stuffing and one eye'][run.monkeyStage]}</b>.`
+      rug: `She went <b>${run.poopLabel}</b>. When the door opened she was asleep in her bed. Of course.${run.scratched ? ' (She did scratch at the garden door first. Nobody came.)' : ''}`,
+      lota: `${run.cushions.filter(c => c.hp <= 0).length} of 5 cushions shredded. The living room looks like it snowed. When the door opened she was asleep in her bed. Of course.`,
+      monkey: `The little green monkey: <b>${['whole','missing an ear','missing an ear and an arm','missing an ear, an arm and most of his stuffing','missing an ear, an arm, his stuffing and one eye'][run.monkeyStage]}</b>. He is in her bed, under her. She is asleep. Of course.`
     }[k];
     const isLast = run.round === 2;
     setTimeout(() => showMsg(`
       <div class="hero"><svg class="face" viewBox="0 0 100 100"><use href="#poppyFace"/></svg>${k === 'monkey' ? `<svg class="mk" viewBox="-40 -64 80 70">${monkeySVG(run.monkeyStage)}</svg>` : ''}</div>
       <p class="sub">Round ${g.R.n} · ${g.R.name}</p>
-      <div class="stamp ok">UNSEEN</div>
+      <div class="stamp ok">ASLEEP</div>
       <p>${body}</p>
       <div class="tally"><span class="j">+${run.joy[k]} joy</span></div>
-      <button class="btn" id="mBtn">${isLast ? 'They\'re coming home' : 'Next: ' + ROUNDS[run.round + 1].name}</button>`,
+      <button class="btn" id="mBtn">${isLast ? 'That evening' : 'Next: ' + ROUNDS[run.round + 1].name}</button>`,
       () => { if (isLast) finale(); else { run.round++; showIntro(); } }), 500);
   }
 
@@ -1027,6 +1018,7 @@
       ${R.key === 'monkey' ? `<div class="hero"><svg class="mk" style="width:90px;height:110px;margin:0" viewBox="-40 -64 80 70">${monkeySVG(0)}</svg></div>` : ''}
       <p>${R.intro}</p>
       <p class="small">${R.how}</p>
+      <p class="small">They come home at a moment you don't know. <b>A car, the gate, the key.</b> Not every car stops. When the door opens, be in your bed.</p>
       <button class="btn" id="mBtn">Go</button>`, () => { paused = false; last = performance.now(); });
   }
 
@@ -1043,7 +1035,7 @@
   // ---------- finale: the scale ----------
   function crimes(){
     const list = [];
-    list.push({icon:'poop', label:'the rug', joy: run.joy.rug, guilt: 30});
+    list.push({icon:'poop', label:'the rug', joy: run.joy.rug, guilt: run.scratched ? 15 : 30});
     const nC = run.cushions.filter(c => c.hp <= 0).length;
     list.push({icon:'cushion', label:'the LOTA', joy: run.joy.lota, guilt: 25 * nC, n: nC});
     list.push({icon:'monkey', label:'the monkey', joy: run.joy.monkey, guilt: 30 + 60 * run.monkeyStage});
@@ -1098,9 +1090,9 @@
     $('game').style.display = 'none';
     const fin = $('finale'); fin.style.display = 'flex'; fin.scrollTop = 0;
     const cs = crimes(); cs[2].stage = run.monkeyStage;
-    $('finSub').textContent = 'The key turns in the door';
+    $('finSub').textContent = 'That evening';
     $('finTitle').textContent = 'When they come home';
-    $('finBody').innerHTML = `<p class="fade">They see the rug. They see the sofa. They see the snow of stuffing on the floor. They look at Poppy.</p>`;
+    $('finBody').innerHTML = `<p class="fade">The rug. The sofa. And now the empty shelf. They look at Poppy, and Poppy weighs it all.</p>${run.scratched ? '<p class="small fade">She did scratch at the garden door, that first day. Nobody came. It weighs a little less.</p>' : ''}`;
     drawScale(0, 0, []);
     // the crimes go on the scale one by one
     let J = 0, G = 0, shown = [];
@@ -1119,12 +1111,12 @@
     const st = run.monkeyStage;
     const heavy = G > J;
     $('finBody').innerHTML = `
-      <p class="fade">${heavy ? 'Poppy\'s heart is full. And heavier than it is full.' : 'Poppy\'s heart is full. But something sits on the other side of it.'} The monkey is still in her mouth, ${['still whole','missing an ear','missing an ear and an arm','leaking stuffing','looking at her with one eye'][st]}.</p>
+      <p class="fade">${heavy ? 'Poppy\'s heart is full. And heavier than it is full.' : 'Poppy\'s heart is full. But something sits on the other side of it.'} The monkey is in her bed, under her, ${['still whole','missing an ear','missing an ear and an arm','leaking stuffing','looking at her with one eye'][st]}.</p>
       <p class="fade"><b>What does she do?</b></p>
       <div class="choices fade">
         <button class="choice" data-c="back"><b>Bring him back</b>Carry the monkey over and lay him at their feet.</button>
-        <button class="choice" data-c="hide"><b>Hide him</b>Push him under what's left of the sofa. Maybe nobody will ask.</button>
-        <button class="choice" data-c="chew"><b>Keep chewing</b>He's hers now.</button>
+        <button class="choice" data-c="hide"><b>Stay on him</b>Lie still. Maybe nobody will look under a sleeping dog.</button>
+        <button class="choice" data-c="chew"><b>Keep chewing</b>Pull him out. He's hers now.</button>
       </div>`;
     document.querySelectorAll('.choice').forEach(b => b.onclick = () => resolve(cs, J, G, b.dataset.c));
   }
@@ -1135,14 +1127,14 @@
     if (choice === 'back'){
       const newMG = Math.round(baseMG * .25); G2 = G - baseMG + newMG; m.guilt = newMG;
       title = 'She brings him back';
-      text = `She walks over slowly, ears flat, tail low, and puts the monkey down at their feet. Then she sits and doesn't look at anyone.</p>
+      text = `She gets up, picks him out of her bed, walks over slowly, ears flat, tail low, and puts the monkey down at their feet. Then she sits and doesn't look at anyone.</p>
         <p>That evening someone sits under the lamp with a needle and green wool. The monkey comes back a little crooked, ${st >= 4 ? 'with one red button eye, ' : ''}and goes back up on the shelf.</p>
         <p>Poppy sleeps underneath it all night.`;
       monkeyArt = monkeySVG(st, true); face = 'poppyFace'; stamp = 'FORGIVEN';
     } else if (choice === 'hide'){
-      title = 'She hides him';
-      text = `The monkey goes under the sofa. Nobody asks. They are busy with the rug.</p>
-        <p>Poppy lies down in her bed and tries to sleep. Every few minutes she lifts her head and looks at the sofa.`;
+      title = 'She stays on him';
+      text = `She lies very still. They look everywhere: behind the sofa, under the shelf, out in the garden. Nobody looks under a sleeping dog.</p>
+        <p>She doesn't sleep much that night.`;
       monkeyArt = null; stamp = 'HEAVY';
     } else {
       const newMG = Math.round(baseMG * 1.5); G2 = G - baseMG + newMG; m.guilt = newMG; J2 = J + 40; run.joy.monkey += 40; m.joy += 40;
